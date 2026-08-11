@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -29,14 +30,39 @@ func createCharacterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getRandomID() (string, error) {
-	bytes := make([]byte, 16)
+func viewCharacterHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "../frontend/character.html")
+}
 
-	_, err := rand.Read(bytes)
+func getRandomID() (string, error) {
+	dirFiles, err := os.ReadDir("../data")
 	if err != nil {
 		return "", err
 	}
-	return hex.EncodeToString(bytes), nil
+
+	for {
+		bytes := make([]byte, 16)
+
+		_, err := rand.Read(bytes)
+		if err != nil {
+			return "", err
+		}
+
+		randomID := hex.EncodeToString(bytes)
+
+		exists := false
+
+		for _, file := range dirFiles {
+			if randomID + ".json" == file.Name() {
+				exists = true
+				break
+			}
+		}
+
+		if !exists {
+			return randomID, nil
+		}
+	}
 }
 
 func getCharacterInfo(r *http.Request) (Character, error) {
@@ -44,23 +70,42 @@ func getCharacterInfo(r *http.Request) (Character, error) {
 	if err != nil {
 		return Character{}, err
 	}	
-
-	characeterID, err := getRandomID()
-	if err != nil {
-		return Character{}, err
-	}
 	
 	characterLevel, err := strconv.Atoi(r.FormValue("level"))
 	if err != nil {
 		return Character{}, err
 	}
 
+	if characterLevel < 1 || characterLevel > 20 {
+		return Character{}, fmt.Errorf("Character's level out of acceptable range")
+	}
+	
+	characterName := r.FormValue("name")
+	if characterName == "" {
+		return Character{}, fmt.Errorf("Character's name is empty")
+	}
+	
+	characterClass := r.FormValue("class")
+	if characterClass == "" {
+		return Character{}, fmt.Errorf("Character's class is empty")
+	}
+
+	characterRace := r.FormValue("race")
+	if characterRace == "" {
+		return Character{}, fmt.Errorf("Character's race is empty")
+	}
+
+	characeterID, err := getRandomID()
+	if err != nil {
+		return Character{}, err
+	}
+
 	c := Character{
 		ID: characeterID,
-		Name: r.FormValue("name"),
+		Name: characterName,
 		Level: characterLevel,
-		Class: r.FormValue("class"),
-		Race: r.FormValue("race"),
+		Class: characterClass,
+		Race: characterRace,
 	}
 
 	return c, nil
@@ -107,6 +152,79 @@ func createCharacter(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func getFile(charcterID string) error {
-	return nil	
+func getAllCharacters() ([]Character, error) {
+	files, err := os.ReadDir("../data")
+	if err != nil {
+		return []Character{}, err
+	}
+
+	var filesNames []string
+
+	for _, file := range files {
+		filePath := filepath.Join("../data", file.Name())
+		filesNames = append(filesNames, filePath)
+	}
+	
+	var filesData [][]byte
+
+	for _, name := range filesNames {
+		data, err := os.ReadFile(name)
+		if err != nil {
+			return []Character{}, err
+		}
+
+		filesData = append(filesData, data)
+	}
+
+	characters := make([]Character, len(filesData))
+
+	for i, data := range filesData {
+		err := json.Unmarshal(data, &characters[i])
+		if err != nil {
+			return []Character{}, err
+		}
+	}
+	
+	return characters, nil
 }
+
+func getCharacterByID(characterID string) (Character, error) {
+	files, err := os.ReadDir("../data")
+	if err != nil {
+		return Character{}, err
+	}
+	
+	target := ""
+	exists := false
+
+	for _, file := range files {
+		if file.Name() == characterID + ".json" {
+			exists = true
+			filePath := filepath.Join("../data", file.Name())
+			target = filePath
+			break
+		}
+	}
+
+	if !exists {
+		return Character{}, fmt.Errorf("character not found")
+	}
+
+	data, err := os.ReadFile(target)
+	if err != nil {
+		return Character{}, err
+	}
+	
+	var c Character
+	err = json.Unmarshal(data, &c)
+	if err != nil {
+		return Character{}, err
+	}
+
+	return c, nil
+}
+
+//COMMENTS:
+/*
+TODO: Implement the Handlers for the getCharacterByID and getAllCharacters funcs
+*/

@@ -5,13 +5,13 @@ import (
 	"log"
 )
 
-func main(){
+func main() {
 	fmt.Print("Checking existence of data/ in the project folder...")
 
-	dirExist := checkDataDirExist()
+	dirErr := checkDataDirExist()
 	
-	if dirExist != nil {
-		fmt.Printf("An error has occured while creating the data dir: %v", dirExist)
+	if dirErr != nil {
+		log.Fatalf("An error has occured while creating the data dir: %v", dirErr)
 	}
 	
 	fmt.Println("Configuring server...")
