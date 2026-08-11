@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 )
 
 func main(){
@@ -19,7 +20,7 @@ func main(){
 
 	err := runServer(localPort)
 	if err != nil {
-		fmt.Errorf("Server error: %v", err)
+		log.Printf("Server error: %v", err)
 	}
 }
 
