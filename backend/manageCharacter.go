@@ -56,7 +56,27 @@ func createCharacterHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func viewCharacterHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "../frontend/character.html")
+	characterID := r.PathValue("id")
+	if characterID == "" {
+		http.Error(w, "ID not found", http.StatusInternalServerError)
+	}
+
+	c, err := getCharacterByID(characterID)
+	if err != nil {
+		http.Error(w, "failed to find the character file by ID", http.StatusInternalServerError)
+	}
+
+	tmpl, err := template.ParseFiles("../frontend/character.html")
+	if err != nil {
+		http.Error(w, "failed parising character.html file", http.StatusInternalServerError)
+		return
+	}
+
+	err = tmpl.Execute(w, c)
+	if err != nil {
+		http.Error(w, "failed to fill character info into template", http.StatusInternalServerError)
+		return
+	}
 }
 
 func getRandomID() (string, error) {
@@ -251,5 +271,4 @@ func getCharacterByID(characterID string) (Character, error) {
 
 //COMMENTS:
 /*
-TODO: Implement the Handlers for the getCharacterByID and getAllCharacters funcs
 */

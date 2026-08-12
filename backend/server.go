@@ -13,6 +13,7 @@ func configureServer() {
 	http.HandleFunc("GET /{$}", indexHandler)
 	http.HandleFunc("GET /characters",charactersHandler)
 	http.HandleFunc("POST /characters/create", createCharacterHandler)
+	http.HandleFunc("GET /character/{id}/view", viewCharacterHandler)
 }
 
 func runServer(port string) error {
