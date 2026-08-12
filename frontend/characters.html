@@ -8,7 +8,14 @@
 
     <body>
         <h1>Existing characters</h1>
-
+        {{range .}}
+            <div>
+                <h3>Name: {{.Name}}</h3>
+                <h3>Level: {{.Level}}</h3>
+                <h3>Class: {{.Class}}</h3>
+                <h3>Race: {{.Race}}</h3>
+            </div>
+        {{end}}
         <a href="/">
             Create a new character.
         </a>    

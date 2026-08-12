@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -20,7 +21,31 @@ type Character struct {
 }
 
 func charactersHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "../frontend/characters.html")
+	fmt.Println("getting characters info")
+	characters, err := getAllCharacters()
+	if err != nil {
+		http.Error(w, "couldnt get all characters stored on data dir", http.StatusInternalServerError)
+	}
+	
+	fmt.Println("parsing the characters.html file")
+	tmpl, err := template.ParseFiles("../frontend/characters.html")
+    if err != nil {
+        http.Error(
+            w,
+            "couldnt parse characters template",
+            http.StatusInternalServerError,
+        )
+        return
+    }
+
+	fmt.Println("trying to fill the template with Character struct data")
+	err = tmpl.Execute(w, characters)
+	if err != nil {
+		http.Error(w, "couldnt fill the template with the go struct values", http.StatusInternalServerError)
+		return 
+	}
+
+	fmt.Println("all done")
 }
 
 func createCharacterHandler(w http.ResponseWriter, r *http.Request) {
