@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 )
@@ -21,13 +22,12 @@ type Character struct {
 }
 
 func charactersHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("getting characters info")
 	characters, err := getAllCharacters()
 	if err != nil {
 		http.Error(w, "couldnt get all characters stored on data dir", http.StatusInternalServerError)
+		return
 	}
 	
-	fmt.Println("parsing the characters.html file")
 	tmpl, err := template.ParseFiles("../frontend/characters.html")
     if err != nil {
         http.Error(
@@ -38,32 +38,32 @@ func charactersHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-	fmt.Println("trying to fill the template with Character struct data")
 	err = tmpl.Execute(w, characters)
 	if err != nil {
 		http.Error(w, "couldnt fill the template with the go struct values", http.StatusInternalServerError)
 		return 
 	}
-
-	fmt.Println("all done")
 }
 
 func createCharacterHandler(w http.ResponseWriter, r *http.Request) {
 	err := createCharacter(w, r)
 	if err != nil {
 		http.Error(w, "Failed to create a new character", http.StatusInternalServerError)
+		return
 	}
 }
 
 func viewCharacterHandler(w http.ResponseWriter, r *http.Request) {
 	characterID := r.PathValue("id")
 	if characterID == "" {
-		http.Error(w, "ID not found", http.StatusInternalServerError)
+		http.Error(w, "ID not found", http.StatusNotFound)
+		return
 	}
 
 	c, err := getCharacterByID(characterID)
 	if err != nil {
-		http.Error(w, "failed to find the character file by ID", http.StatusInternalServerError)
+		http.Error(w, "failed to find the character file by ID", http.StatusNotFound)
+		return
 	}
 
 	tmpl, err := template.ParseFiles("../frontend/character.html")
@@ -82,13 +82,13 @@ func viewCharacterHandler(w http.ResponseWriter, r *http.Request) {
 func editCharacterHandler(w http.ResponseWriter, r *http.Request) {
 	characterID := r.PathValue("id")
 	if characterID == "" {
-		http.Error(w, "ID not found", http.StatusInternalServerError)
+		http.Error(w, "ID not found", http.StatusNotFound)
 		return
 	}
 
 	c, err := getCharacterByID(characterID)
 	if err != nil {
-		http.Error(w, "couldnt get character by ID", http.StatusInternalServerError)
+		http.Error(w, "couldnt get character by ID", http.StatusNotFound)
 		return
 	}
 	
@@ -114,8 +114,8 @@ func editCharacterDoneHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	currentURL := filepath.Join("/character", characterID)
-	currentURL = filepath.Join(currentURL, "view")
+	currentURL := path.Join("/character", characterID)
+	currentURL = path.Join(currentURL, "view")
 
 	http.Redirect(w, r, currentURL, http.StatusFound)
 }
@@ -253,7 +253,10 @@ func getCharacterInfo(r *http.Request) (Character, error) {
 	}
 
 	validated, err := validateExistingCharacter(values)
-
+	if err != nil {
+		return Character{}, err
+	}
+	
 	return validated, nil
 }
 
@@ -378,7 +381,7 @@ func editCharacter(characterID string, r *http.Request) error {
 
 	data, err := createCharacterJSON(c)
 	if err != nil {
-		return fmt.Errorf("error while decoding .json")
+		return fmt.Errorf("error while encoding .json")
 	}
 
 	err = createJSON(data, characterID)
