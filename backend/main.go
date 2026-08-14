@@ -19,6 +19,13 @@ func main() {
 		log.Fatalf("%v", err)
 	}
 
+	ci, err := getReferenceData()
+	if err != nil {
+		log.Fatalf("%v", err)
+	}
+	fmt.Printf("ClassInfo struct: %v\n", ci)
+
+
 	fmt.Println("Configuring server...")
 	localPort := ":8080"
 	configureServer()

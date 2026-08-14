@@ -19,6 +19,14 @@ type Character struct {
 	Level int    `json:"level"`
 	Class string `json:"class"`
 	Race string  `json:"race"`
+	MaxHp int `json:"max_hp"`
+	CurrHp int `json:"current_hp"`
+	Profs Proficiency `json:"proficiencies"`
+	ToolsChoice []ToolChoice `json:"tool_proficiency_choices"`
+	SkillChoice Skills `json:"skill_choices"`
+	Spells Spellcasting `json:"spellcasting"`
+	AC int `json:"ac"`
+	Speed float64 `json:"speed"`
 }
 
 func charactersHandler(w http.ResponseWriter, r *http.Request) {
