@@ -177,13 +177,8 @@ func validateNewCharacter(s []string) (Character, error) {
 		return Character{}, err
 	}
 
-	c := Character{
-		s[0],
-		s[1],
-		level,
-		s[3],
-		s[4],
-	}
+	//TODO: Correct the Character struct for data validation
+	c := Character{}
 
 	return c, nil
 }

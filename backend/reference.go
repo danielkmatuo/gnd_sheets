@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -39,6 +41,32 @@ type ClassInfo struct {
 	Spells Spellcasting `json:"spellcasting"`
 } 
 
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles("../frontend/index.html")
+	if err != nil {
+		http.Error(w, "failed parising character.html file", http.StatusInternalServerError)
+		return
+	}
+	
+	class := r.FormValue("class")
+
+	ciMap, err := getReferenceData()
+	if err != nil {
+		http.Error(w, "failed fetching data from the reference classes.json file", http.StatusInternalServerError)
+		return
+	}
+
+	ci := getClassInfoFromMap(ciMap, class)
+
+	err = tmpl.Execute(w, ci)
+	if err != nil {
+		http.Error(w, "failed filling the template with class info", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/characters", http.StatusFound)
+}
+
 func getReferenceData() (map[string]ClassInfo, error) {
 	classesData, err := os.ReadFile("../data/reference/classes.json")
 	if err != nil {
@@ -68,6 +96,10 @@ func parseHitDie(value string) (int, error) {
 	}
 
 	return parsedValue, nil
+}
+
+func getClassInfoFromMap(ciMap map[string]ClassInfo, class string) ClassInfo {
+	return ciMap[class]
 }
 
 func validateReferenceData(class string, referenceMap map[string]ClassInfo) (Character, error) {

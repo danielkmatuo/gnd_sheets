@@ -5,10 +5,6 @@ import (
 	"fmt"
 )
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "../frontend/index.html")
-}
-
 func configureServer() {
 	http.HandleFunc("GET /{$}", indexHandler)
 	http.HandleFunc("GET /characters",charactersHandler)
