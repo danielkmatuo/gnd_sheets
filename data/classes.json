@@ -1,0 +1,466 @@
+{
+  "barbarian": {
+    "name": "Barbarian",
+    "hit_die": "d12",
+    "proficiencies": {
+      "armor": [
+        "light armor",
+        "medium armor",
+        "shields"
+      ],
+      "weapons": [
+        "simple weapons",
+        "martial weapons"
+      ],
+      "tools": [],
+      "saving_throws": [
+        "strength",
+        "constitution"
+      ]
+    },
+    "tool_proficiency_choices": [],
+    "skill_choices": {
+      "choose": 2,
+      "from": [
+        "animal handling",
+        "athletics",
+        "intimidation",
+        "nature",
+        "perception",
+        "survival"
+      ]
+    },
+    "spellcasting": null
+  },
+  "bard": {
+    "name": "Bard",
+    "hit_die": "d8",
+    "proficiencies": {
+      "armor": [
+        "light armor"
+      ],
+      "weapons": [
+        "simple weapons",
+        "hand crossbows",
+        "longswords",
+        "rapiers",
+        "shortswords"
+      ],
+      "tools": [],
+      "saving_throws": [
+        "dexterity",
+        "charisma"
+      ]
+    },
+    "tool_proficiency_choices": [
+      {
+        "choose": 3,
+        "from_categories": [
+          "musical instrument"
+        ]
+      }
+    ],
+    "skill_choices": {
+      "choose": 3,
+      "from": [
+        "acrobatics",
+        "animal handling",
+        "arcana",
+        "athletics",
+        "deception",
+        "history",
+        "insight",
+        "intimidation",
+        "investigation",
+        "medicine",
+        "nature",
+        "perception",
+        "performance",
+        "persuasion",
+        "religion",
+        "sleight of hand",
+        "stealth",
+        "survival"
+      ]
+    },
+    "spellcasting": {
+      "ability": "charisma",
+      "starts_at_level": 1
+    }
+  },
+  "cleric": {
+    "name": "Cleric",
+    "hit_die": "d8",
+    "proficiencies": {
+      "armor": [
+        "light armor",
+        "medium armor",
+        "shields"
+      ],
+      "weapons": [
+        "simple weapons"
+      ],
+      "tools": [],
+      "saving_throws": [
+        "wisdom",
+        "charisma"
+      ]
+    },
+    "tool_proficiency_choices": [],
+    "skill_choices": {
+      "choose": 2,
+      "from": [
+        "history",
+        "insight",
+        "medicine",
+        "persuasion",
+        "religion"
+      ]
+    },
+    "spellcasting": {
+      "ability": "wisdom",
+      "starts_at_level": 1
+    }
+  },
+  "druid": {
+    "name": "Druid",
+    "hit_die": "d8",
+    "proficiencies": {
+      "armor": [
+        "light armor",
+        "medium armor",
+        "shields"
+      ],
+      "weapons": [
+        "clubs",
+        "daggers",
+        "darts",
+        "javelins",
+        "maces",
+        "quarterstaffs",
+        "scimitars",
+        "sickles",
+        "slings",
+        "spears"
+      ],
+      "tools": [
+        "herbalism kit"
+      ],
+      "saving_throws": [
+        "intelligence",
+        "wisdom"
+      ]
+    },
+    "tool_proficiency_choices": [],
+    "skill_choices": {
+      "choose": 2,
+      "from": [
+        "arcana",
+        "animal handling",
+        "insight",
+        "medicine",
+        "nature",
+        "perception",
+        "religion",
+        "survival"
+      ]
+    },
+    "spellcasting": {
+      "ability": "wisdom",
+      "starts_at_level": 1
+    }
+  },
+  "fighter": {
+    "name": "Fighter",
+    "hit_die": "d10",
+    "proficiencies": {
+      "armor": [
+        "light armor",
+        "medium armor",
+        "heavy armor",
+        "shields"
+      ],
+      "weapons": [
+        "simple weapons",
+        "martial weapons"
+      ],
+      "tools": [],
+      "saving_throws": [
+        "strength",
+        "constitution"
+      ]
+    },
+    "tool_proficiency_choices": [],
+    "skill_choices": {
+      "choose": 2,
+      "from": [
+        "acrobatics",
+        "animal handling",
+        "athletics",
+        "history",
+        "insight",
+        "intimidation",
+        "perception",
+        "survival"
+      ]
+    },
+    "spellcasting": null
+  },
+  "monk": {
+    "name": "Monk",
+    "hit_die": "d8",
+    "proficiencies": {
+      "armor": [],
+      "weapons": [
+        "simple weapons",
+        "shortswords"
+      ],
+      "tools": [],
+      "saving_throws": [
+        "strength",
+        "dexterity"
+      ]
+    },
+    "tool_proficiency_choices": [
+      {
+        "choose": 1,
+        "from_categories": [
+          "artisan's tools",
+          "musical instrument"
+        ]
+      }
+    ],
+    "skill_choices": {
+      "choose": 2,
+      "from": [
+        "acrobatics",
+        "athletics",
+        "history",
+        "insight",
+        "religion",
+        "stealth"
+      ]
+    },
+    "spellcasting": null
+  },
+  "paladin": {
+    "name": "Paladin",
+    "hit_die": "d10",
+    "proficiencies": {
+      "armor": [
+        "light armor",
+        "medium armor",
+        "heavy armor",
+        "shields"
+      ],
+      "weapons": [
+        "simple weapons",
+        "martial weapons"
+      ],
+      "tools": [],
+      "saving_throws": [
+        "wisdom",
+        "charisma"
+      ]
+    },
+    "tool_proficiency_choices": [],
+    "skill_choices": {
+      "choose": 2,
+      "from": [
+        "athletics",
+        "insight",
+        "intimidation",
+        "medicine",
+        "persuasion",
+        "religion"
+      ]
+    },
+    "spellcasting": {
+      "ability": "charisma",
+      "starts_at_level": 2
+    }
+  },
+  "ranger": {
+    "name": "Ranger",
+    "hit_die": "d10",
+    "proficiencies": {
+      "armor": [
+        "light armor",
+        "medium armor",
+        "shields"
+      ],
+      "weapons": [
+        "simple weapons",
+        "martial weapons"
+      ],
+      "tools": [],
+      "saving_throws": [
+        "strength",
+        "dexterity"
+      ]
+    },
+    "tool_proficiency_choices": [],
+    "skill_choices": {
+      "choose": 3,
+      "from": [
+        "animal handling",
+        "athletics",
+        "insight",
+        "investigation",
+        "nature",
+        "perception",
+        "stealth",
+        "survival"
+      ]
+    },
+    "spellcasting": {
+      "ability": "wisdom",
+      "starts_at_level": 2
+    }
+  },
+  "rogue": {
+    "name": "Rogue",
+    "hit_die": "d8",
+    "proficiencies": {
+      "armor": [
+        "light armor"
+      ],
+      "weapons": [
+        "simple weapons",
+        "hand crossbows",
+        "longswords",
+        "rapiers",
+        "shortswords"
+      ],
+      "tools": [
+        "thieves' tools"
+      ],
+      "saving_throws": [
+        "dexterity",
+        "intelligence"
+      ]
+    },
+    "tool_proficiency_choices": [],
+    "skill_choices": {
+      "choose": 4,
+      "from": [
+        "acrobatics",
+        "athletics",
+        "deception",
+        "insight",
+        "intimidation",
+        "investigation",
+        "perception",
+        "performance",
+        "persuasion",
+        "sleight of hand",
+        "stealth"
+      ]
+    },
+    "spellcasting": null
+  },
+  "sorcerer": {
+    "name": "Sorcerer",
+    "hit_die": "d6",
+    "proficiencies": {
+      "armor": [],
+      "weapons": [
+        "daggers",
+        "darts",
+        "slings",
+        "quarterstaffs",
+        "light crossbows"
+      ],
+      "tools": [],
+      "saving_throws": [
+        "constitution",
+        "charisma"
+      ]
+    },
+    "tool_proficiency_choices": [],
+    "skill_choices": {
+      "choose": 2,
+      "from": [
+        "arcana",
+        "deception",
+        "insight",
+        "intimidation",
+        "persuasion",
+        "religion"
+      ]
+    },
+    "spellcasting": {
+      "ability": "charisma",
+      "starts_at_level": 1
+    }
+  },
+  "warlock": {
+    "name": "Warlock",
+    "hit_die": "d8",
+    "proficiencies": {
+      "armor": [
+        "light armor"
+      ],
+      "weapons": [
+        "simple weapons"
+      ],
+      "tools": [],
+      "saving_throws": [
+        "wisdom",
+        "charisma"
+      ]
+    },
+    "tool_proficiency_choices": [],
+    "skill_choices": {
+      "choose": 2,
+      "from": [
+        "arcana",
+        "deception",
+        "history",
+        "intimidation",
+        "investigation",
+        "nature",
+        "religion"
+      ]
+    },
+    "spellcasting": {
+      "ability": "charisma",
+      "starts_at_level": 1
+    }
+  },
+  "wizard": {
+    "name": "Wizard",
+    "hit_die": "d6",
+    "proficiencies": {
+      "armor": [],
+      "weapons": [
+        "daggers",
+        "darts",
+        "slings",
+        "quarterstaffs",
+        "light crossbows"
+      ],
+      "tools": [],
+      "saving_throws": [
+        "intelligence",
+        "wisdom"
+      ]
+    },
+    "tool_proficiency_choices": [],
+    "skill_choices": {
+      "choose": 2,
+      "from": [
+        "arcana",
+        "history",
+        "insight",
+        "investigation",
+        "medicine",
+        "religion"
+      ]
+    },
+    "spellcasting": {
+      "ability": "intelligence",
+      "starts_at_level": 1
+    }
+  }
+}
