@@ -79,6 +79,47 @@ func viewCharacterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func editCharacterHandler(w http.ResponseWriter, r *http.Request) {
+	characterID := r.PathValue("id")
+	if characterID == "" {
+		http.Error(w, "ID not found", http.StatusInternalServerError)
+		return
+	}
+
+	c, err := getCharacterByID(characterID)
+	if err != nil {
+		http.Error(w, "couldnt get character by ID", http.StatusInternalServerError)
+		return
+	}
+	
+	tmpl, err := template.ParseFiles("../frontend/edit.html")
+	if err != nil {
+		http.Error(w, "wasnt able to parse html file", http.StatusInternalServerError)
+		return
+	}
+
+	err = tmpl.Execute(w, c)
+	if err != nil {
+		http.Error(w, "wasnt able to render html file", http.StatusInternalServerError)
+		return
+	}
+}
+
+func editCharacterDoneHandler(w http.ResponseWriter, r *http.Request) {
+	characterID := r.PathValue("id")
+
+	err := editCharacter(characterID, r)
+	if err != nil {
+		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
+		return
+	}
+	
+	currentURL := filepath.Join("/character", characterID)
+	currentURL = filepath.Join(currentURL, "view")
+
+	http.Redirect(w, r, currentURL, http.StatusFound)
+}
+
 func getRandomID() (string, error) {
 	dirFiles, err := os.ReadDir("../data")
 	if err != nil {
@@ -110,50 +151,110 @@ func getRandomID() (string, error) {
 	}
 }
 
+func validateNewCharacter(s []string) (Character, error) {
+	if s[1] == "" {
+		return Character{}, fmt.Errorf("character with empty name is invalid")
+	}
+
+	if s[3] == "" {
+		return Character{}, fmt.Errorf("character with empty class is invalid")
+	}
+
+	if s[4] == "" {
+		return Character{}, fmt.Errorf("character with empty race is invalid")
+	}
+
+	level, err := strconv.Atoi(s[2])
+	if err != nil {
+		return Character{}, err
+	}
+
+	c := Character{
+		s[0],
+		s[1],
+		level,
+		s[3],
+		s[4],
+	}
+
+	return c, nil
+}
+
+func validateExistingCharacter(s []string) (Character, error){
+	oldChar, err := getCharacterByID(s[0])
+	if err != nil {
+		return Character{}, err
+	}
+
+	if s[1] == "" {
+		s[1] = oldChar.Name
+	}
+	if s[3] == "" {
+		s[3] = oldChar.Class
+	}
+	if s[4] == "" {
+		s[4] = oldChar.Race
+	}
+
+	level, err := strconv.Atoi(s[2])
+	if err != nil {
+		return Character{}, err
+	}
+
+	newChar := Character{
+			s[0],
+			s[1],
+			level,
+			s[3],
+			s[4],
+		}
+
+	return newChar, nil
+}
+
 func getCharacterInfo(r *http.Request) (Character, error) {
 	err := r.ParseForm()
 	if err != nil {
 		return Character{}, err
 	}	
 	
-	characterLevel, err := strconv.Atoi(r.FormValue("level"))
-	if err != nil {
-		return Character{}, err
-	}
+	characterLevel := r.FormValue("level")
 
-	if characterLevel < 1 || characterLevel > 20 {
-		return Character{}, fmt.Errorf("Character's level out of acceptable range")
-	}
-	
 	characterName := r.FormValue("name")
-	if characterName == "" {
-		return Character{}, fmt.Errorf("Character's name is empty")
-	}
 	
 	characterClass := r.FormValue("class")
-	if characterClass == "" {
-		return Character{}, fmt.Errorf("Character's class is empty")
-	}
 
 	characterRace := r.FormValue("race")
-	if characterRace == "" {
-		return Character{}, fmt.Errorf("Character's race is empty")
+
+	characterID := r.PathValue("id")
+
+	values := []string {
+		characterID, 
+		characterName,
+		characterLevel,
+		characterClass,
+		characterRace,
 	}
 
-	characeterID, err := getRandomID()
-	if err != nil {
-		return Character{}, err
+	if characterID == "" {
+		characterID, err = getRandomID()
+		if err != nil {
+			return Character{}, err
+		}
+
+		values[0] = characterID
+
+		validated, err := validateNewCharacter(values)
+		if err != nil {
+			return Character{}, err
+		}
+
+		return validated, nil
 	}
 
-	c := Character{
-		ID: characeterID,
-		Name: characterName,
-		Level: characterLevel,
-		Class: characterClass,
-		Race: characterRace,
-	}
+	validated, err := validateExistingCharacter(values)
 
-	return c, nil
+	return validated, nil
 }
 
 func createCharacterJSON(c Character) ([]byte, error) {
@@ -267,6 +368,25 @@ func getCharacterByID(characterID string) (Character, error) {
 	}
 
 	return c, nil
+}
+
+func editCharacter(characterID string, r *http.Request) error {
+	c, err := getCharacterInfo(r)
+	if err != nil {
+		return err
+	}
+
+	data, err := createCharacterJSON(c)
+	if err != nil {
+		return fmt.Errorf("error while decoding .json")
+	}
+
+	err = createJSON(data, characterID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 //COMMENTS:

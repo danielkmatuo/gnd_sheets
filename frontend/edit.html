@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+
+<html lang="en-US">
+    <head>
+        <title>G&D Sheets</title>
+        <meta charset="utf-8">
+        <meta name="author" content="danielkmatuo">
+    </head>
+    <body>
+        <h1>Create your first character</h1>
+        <form action="/character/{{.ID}}/edit/done" method="POST">
+            <div>
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" placeholder={{.Name}}>
+            </div>
+            <div>
+                <label for="level">Level</label>
+                <select id="level" name="level">
+                    <option value="{{.Level}}">{{.Level}}</option>
+                    <option value=1>1</option>
+                    <option value=2>2</option>
+                    <option value=3>3</option>
+                    <option value=4>4</option>
+                    <option value=5>5</option>
+                    <option value=6>6</option>
+                    <option value=7>7</option>
+                    <option value=8>8</option>
+                    <option value=9>9</option>
+                    <option value=10>10</option>
+                    <option value=11>11</option>
+                    <option value=12>12</option>
+                    <option value=13>13</option>
+                    <option value=14>14</option>
+                    <option value=15>15</option>
+                    <option value=16>16</option>
+                    <option value=17>17</option>
+                    <option value=18>18</option>
+                    <option value=19>19</option>
+                    <option value=20>20</option>
+                </select>
+            </div>
+            <div>
+                <label for="class">Class</label>
+                <select id="class" name="class">
+                    <option value="">{{.Class}}</option>
+                    <option value="artificer">Artificer</option>
+                    <option value="barbarian">Barbarian</option>
+                    <option value="bard">Bard</option>
+                    <option value="cleric">Cleric</option>
+                    <option value="druid">Druid</option>
+                    <option value="fighter">Fighter</option>
+                    <option value="monk">Monk</option>
+                    <option value="paladin">Paladin</option>
+                    <option value="ranger">Ranger</option>
+                    <option value="rogue">Rogue</option>
+                    <option value="sorcerer">Sorcerer</option>
+                    <option value="warlock">Warlock</option>
+                    <option value="wizard">Wizard</option>
+                </select>
+            </div>
+            <div>
+                <label for="race">Race</label>
+                <select id="race" name="race">
+                    <option value="">{{.Race}}</option>
+                    <option value="dragonborn">Dragonborn</option>
+                    <option value="dwarf">Dwarf</option>
+                    <option value="elf">Elf</option>
+                    <option value="gnome">Gnome</option>
+                    <option value="halfelf">Half-elf</option>
+                    <option value="halforc">Half-orc</option>
+                    <option value="halfling">Halfling</option>
+                    <option value="human">Human</option>
+                    <option value="tiefling">Tiefling</option>
+                </select>
+            </div>
+            <button type="submit">Edit character</button>
+        </form>
+    </body>
+</html>

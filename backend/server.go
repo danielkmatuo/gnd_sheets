@@ -14,6 +14,8 @@ func configureServer() {
 	http.HandleFunc("GET /characters",charactersHandler)
 	http.HandleFunc("POST /characters/create", createCharacterHandler)
 	http.HandleFunc("GET /character/{id}/view", viewCharacterHandler)
+	http.HandleFunc("GET /character/{id}/edit", editCharacterHandler)
+	http.HandleFunc("POST /character/{id}/edit/done", editCharacterDoneHandler)
 }
 
 func runServer(port string) error {
