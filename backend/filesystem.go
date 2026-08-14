@@ -3,11 +3,10 @@ package main
 import (
  "fmt"
  "os"
- "path/filepath"
 )
 
 const (
-	characters = "../data/reference/characters.json"
+	characters = "../data/reference/classes.json"
 )
 
 func buildDataDir() error {
@@ -48,30 +47,23 @@ func ensureDataDirExist() error {
 }
 
 func ensureEssentialFilesExist() error {
-	filesList, err := os.ReadDir("../data")
-	if err != nil {
-		return err
-	}
+    files := []string{
+        "../data/reference/classes.json",
+    }
 
-	files := []string {characters}
-	var foundFiles []string
+    for _, file := range files {
+        _, err := os.Stat(file)
 
-	for _, file := range filesList {
-		filePath := filepath.Join("../data", file.Name())
+        if err != nil {
+            if os.IsNotExist(err) {
+                return fmt.Errorf("required file does not exist: %s", file)
+            }
 
-		for _, srcFile := range files {
-			if filePath == srcFile {
-				foundFiles = append(foundFiles, filePath)
-				break
-			} 		
-		}
-	}
-	
-	if len(files) != len(foundFiles) {
-		return fmt.Errorf("necessary files not found")
-	}
+            return err
+        }
+    }
 
-	return nil
+    return nil
 }
 
 func ensureChildDirsExist() error {
