@@ -8,7 +8,7 @@ import (
 func main() {
 	fmt.Print("Checking existence of data/ in the project folder...")
 
-	err := ensureChildDirExist()
+	err := ensureChildDirsExist()
 	
 	if err != nil {
 		log.Fatalf("An error has occured while creating necessary data dirs: %v", err)

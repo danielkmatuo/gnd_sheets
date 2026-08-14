@@ -121,7 +121,7 @@ func editCharacterDoneHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getRandomID() (string, error) {
-	dirFiles, err := os.ReadDir("../data")
+	dirFiles, err := os.ReadDir("../data/characters")
 	if err != nil {
 		return "", err
 	}
@@ -270,7 +270,7 @@ func createCharacterJSON(c Character) ([]byte, error) {
 }
 
 func createJSON(data []byte, ID string) error {
-	fileName := filepath.Join("../data", ID + ".json")
+	fileName := filepath.Join("../data/characters", ID + ".json")
 
 	err := os.WriteFile(fileName, data, 0644)
 	if err != nil {
@@ -302,7 +302,7 @@ func createCharacter(w http.ResponseWriter, r *http.Request) error {
 }
 
 func getAllCharacters() ([]Character, error) {
-	files, err := os.ReadDir("../data")
+	files, err := os.ReadDir("../data/characters")
 	if err != nil {
 		return []Character{}, err
 	}
@@ -310,7 +310,7 @@ func getAllCharacters() ([]Character, error) {
 	var filesNames []string
 
 	for _, file := range files {
-		filePath := filepath.Join("../data", file.Name())
+		filePath := filepath.Join("../data/characters", file.Name())
 		filesNames = append(filesNames, filePath)
 	}
 	
@@ -338,7 +338,7 @@ func getAllCharacters() ([]Character, error) {
 }
 
 func getCharacterByID(characterID string) (Character, error) {
-	files, err := os.ReadDir("../data")
+	files, err := os.ReadDir("../data/characters")
 	if err != nil {
 		return Character{}, err
 	}
@@ -349,7 +349,7 @@ func getCharacterByID(characterID string) (Character, error) {
 	for _, file := range files {
 		if file.Name() == characterID + ".json" {
 			exists = true
-			filePath := filepath.Join("../data", file.Name())
+			filePath := filepath.Join("../data/characters", file.Name())
 			target = filePath
 			break
 		}

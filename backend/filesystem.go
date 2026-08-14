@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	characters = "../data/characters.json"
+	characters = "../data/reference/characters.json"
 )
 
 func buildDataDir() error {
@@ -16,10 +16,9 @@ func buildDataDir() error {
 	return os.MkdirAll("../data", 0755)
 }
 
-func buildLocalDataDir() error {
-	fmt.Print("Creating new local data dir...")
-
-	return os.MkdirAll("../data/local", 0755)
+func buildCharactersDataDir() error {
+	fmt.Print("Creating new characters data dir...")
+	return os.MkdirAll("../data/characters", 0755)
 }
 
 func ensureDataDirExist() error {
@@ -75,33 +74,46 @@ func ensureEssentialFilesExist() error {
 	return nil
 }
 
-func ensureChildDirExist() error {
-	err := ensureDataDirExist()
-	if err != nil {
-		return err
-	}
+func ensureChildDirsExist() error {
+    err := ensureDataDirExist()
+    if err != nil {
+        return err
+    }
 
-	info, err := os.Stat("../data/local")
+    info, err := os.Stat("../data/reference")
 
-	if err == nil {
-		if !info.IsDir(){
-			return fmt.Errorf("local child dir exists, but its not a directory...\n")
-		}
+    if err == nil {
+        if !info.IsDir() {
+            return fmt.Errorf("reference is not a directory")
+        }
+    } else if os.IsNotExist(err) {
+        return fmt.Errorf("reference dir does not exist; therefore no reference file exists")
+    } else {
+        return err
+    }
 
-		fmt.Print("data/local/ dir already exists... Skipping step...\n")
-		return nil
-	}
-	
-	if os.IsNotExist(err) {
-		fmt.Print("data/local/ dir doesn't exist, creating it...\n")
+    info, err = os.Stat("../data/characters")
 
-		err = buildLocalDataDir()
-		if err != nil {
-			return err
-		}
+    if err == nil {
+        if !info.IsDir() {
+            return fmt.Errorf("characters exists, but is not a directory")
+        }
 
-		fmt.Print("data/local/ dir created succesfully!\n")
-		return nil
-	}
-	return err
+        fmt.Print("data/characters/ dir already exists... Skipping step...\n")
+        return nil
+    }
+
+    if os.IsNotExist(err) {
+        fmt.Print("data/characters/ dir doesn't exist, creating it...\n")
+
+        err = buildCharactersDataDir()
+        if err != nil {
+            return err
+        }
+
+        fmt.Print("data/characters/ dir created successfully!\n")
+        return nil
+    }
+
+    return err
 }
