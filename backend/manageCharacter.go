@@ -159,6 +159,7 @@ func getRandomID() (string, error) {
 	}
 }
 
+//TODO: refactor validateNewCharacter and validateExistingCharacter to fit the new js + go workflow and to ensure data is properly handled before storage
 func validateNewCharacter(s []string) (Character, error) {
 	if s[1] == "" {
 		return Character{}, fmt.Errorf("character with empty name is invalid")
@@ -210,51 +211,20 @@ func validateExistingCharacter(s []string) (Character, error){
 }
 
 func getCharacterInfo(r *http.Request) (Character, error) {
-	err := r.ParseForm()
+	var c Character
+
+	err := json.NewDecoder(r.Body).Decode(&c)
 	if err != nil {
 		return Character{}, err
-	}	
-	
-	characterLevel := r.FormValue("level")
-
-	characterName := r.FormValue("name")
-	
-	characterClass := r.FormValue("class")
-
-	characterRace := r.FormValue("race")
+	}
 
 	characterID := r.PathValue("id")
-
-	values := []string {
-		characterID, 
-		characterName,
-		characterLevel,
-		characterClass,
-		characterRace,
-	}
-
 	if characterID == "" {
 		characterID, err = getRandomID()
-		if err != nil {
-			return Character{}, err
-		}
-
-		values[0] = characterID
-
-		validated, err := validateNewCharacter(values)
-		if err != nil {
-			return Character{}, err
-		}
-
-		return validated, nil
+		c.ID = characterID
 	}
 
-	validated, err := validateExistingCharacter(values)
-	if err != nil {
-		return Character{}, err
-	}
-	
-	return validated, nil
+	return c, nil
 }
 
 func createCharacterJSON(c Character) ([]byte, error) {
@@ -293,7 +263,7 @@ func createCharacter(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	http.Redirect(w, r, "/characters", http.StatusFound)
+	w.WriteHeader(http.StatusCreated)
 
 	return nil
 }
