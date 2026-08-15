@@ -10,7 +10,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strconv"
+//	"strconv"
 )
 
 type Character struct {
@@ -172,10 +172,10 @@ func validateNewCharacter(s []string) (Character, error) {
 		return Character{}, fmt.Errorf("character with empty race is invalid")
 	}
 
-	level, err := strconv.Atoi(s[2])
-	if err != nil {
-		return Character{}, err
-	}
+//	level, err := strconv.Atoi(s[2])
+//	if err != nil {
+//		return Character{}, err
+//	}
 
 	//TODO: Correct the Character struct for data validation
 	c := Character{}
@@ -199,20 +199,14 @@ func validateExistingCharacter(s []string) (Character, error){
 		s[4] = oldChar.Race
 	}
 
-	level, err := strconv.Atoi(s[2])
-	if err != nil {
-		return Character{}, err
-	}
+//	level, err := strconv.Atoi(s[2])
+//	if err != nil {
+//		return Character{}, err
+//	}
 
-	newChar := Character{
-			s[0],
-			s[1],
-			level,
-			s[3],
-			s[4],
-		}
 
-	return newChar, nil
+	//TODO: return correct Character{} struct
+	return Character{}, nil
 }
 
 func getCharacterInfo(r *http.Request) (Character, error) {

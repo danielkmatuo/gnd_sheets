@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"html/template"
+//	"html/template"
 	"net/http"
 	"os"
 	"strconv"
@@ -41,30 +41,63 @@ type ClassInfo struct {
 	Spells Spellcasting `json:"spellcasting"`
 } 
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("../frontend/index.html")
+//TODO: Check if I need this handler after classReferenceHandler implementation
+//func indexHandler(w http.ResponseWriter, r *http.Request) {
+//	tmpl, err := template.ParseFiles("../frontend/index.html")
+//	if err != nil {
+//		http.Error(w, "failed parising character.html file", http.StatusInternalServerError)
+//		return
+//	}
+//	
+//	class := r.FormValue("class")
+//
+//	ciMap, err := getReferenceData()
+//	if err != nil {
+//		http.Error(w, "failed fetching data from the reference classes.json file", http.StatusInternalServerError)
+//		return
+//	}
+//
+//	ci := getClassInfoFromMap(ciMap, class)
+//
+//	err = tmpl.Execute(w, ci)
+//	if err != nil {
+//		http.Error(w, "failed filling the template with class info", http.StatusInternalServerError)
+//		return
+//	}
+//
+//	http.Redirect(w, r, "/characters", http.StatusFound)
+//}
+
+func classReferenceHandler(w http.ResponseWriter, r *http.Request) {
+	className := r.PathValue("class")
+
+	data, err := os.ReadFile("../data/reference/classes.json")
 	if err != nil {
-		http.Error(w, "failed parising character.html file", http.StatusInternalServerError)
+		http.Error(w, "could not read class reference data", http.StatusInternalServerError)
 		return
 	}
-	
-	class := r.FormValue("class")
 
-	ciMap, err := getReferenceData()
+	var classes map[string]ClassInfo
+
+	err = json.Unmarshal(data, &classes)
 	if err != nil {
-		http.Error(w, "failed fetching data from the reference classes.json file", http.StatusInternalServerError)
+		http.Error(w, "could not parse class reference data", http.StatusInternalServerError)
 		return
 	}
 
-	ci := getClassInfoFromMap(ciMap, class)
-
-	err = tmpl.Execute(w, ci)
-	if err != nil {
-		http.Error(w, "failed filling the template with class info", http.StatusInternalServerError)
+	class, ok := classes[className]
+	if !ok {
+		http.Error(w, "class not found", http.StatusNotFound)
 		return
 	}
 
-	http.Redirect(w, r, "/characters", http.StatusFound)
+	w.Header().Set("Content-Type", "application/json")
+
+	err = json.NewEncoder(w).Encode(class)
+	if err != nil {
+		http.Error(w, "could not send class data", http.StatusInternalServerError)
+		return
+	}
 }
 
 func getReferenceData() (map[string]ClassInfo, error) {
