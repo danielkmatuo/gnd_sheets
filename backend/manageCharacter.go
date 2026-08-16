@@ -167,18 +167,12 @@ func getRandomID() (string, error) {
 	}
 }
 
-func getCharacterInfo(r *http.Request) (Character, error) {
-	var c Character
+func getCharacterInfoCreation(r *http.Request) (NewCharacter, error) {
+	var c NewCharacter
 
 	err := json.NewDecoder(r.Body).Decode(&c)
 	if err != nil {
-		return Character{}, err
-	}
-
-	characterID := r.PathValue("id")
-	if characterID == "" {
-		characterID, err = getRandomID()
-		c.ID = characterID
+		return NewCharacter{}, err
 	}
 
 	return c, nil

@@ -1,31 +1,84 @@
 package main
 
 import (
-	"strconv"
 	"fmt"
+	"os"
+	"strconv"
+	"strings"
 )
 
-//TODO: refactor validateNewCharacter and validateExistingCharacter to fit the new js + go workflow and to ensure data is properly handled before storage
-func validateNewCharacter(s []string) (Character, error) {
-	if s[1] == "" {
-		return Character{}, fmt.Errorf("character with empty name is invalid")
+func checkIDExist (characterID string) (bool, error) {
+	files, err := os.ReadDir("../data/characters")
+	exist := false
+
+	for _, file := range(files){
+		if characterID + ".json" == file.Name() {
+			characterID, err = getRandomID()
+			if err != nil {
+				return false, err
+			}
+
+			exist = true
+			break
+		}
 	}
 
-	if s[3] == "" {
-		return Character{}, fmt.Errorf("character with empty class is invalid")
-	}
+	return exist, nil
+}
 
-	if s[4] == "" {
-		return Character{}, fmt.Errorf("character with empty race is invalid")
-	}
-
-//	level, err := strconv.Atoi(s[2])
-//	if err != nil {
-//		return Character{}, err
-//	}
-
-	//TODO: Correct the Character struct for data validation
+//TODO: refactor validateExistingCharacter to fit the new js + go workflow and to ensure data is properly handled before storage
+func validateNewCharacter(newCharacter NewCharacter) (Character, error) {
 	c := Character{}
+
+	characterID, err := getRandomID()
+	if err != nil {
+		return Character{}, err
+	}	
+
+	IDExist, err := checkIDExist(characterID)
+	if err != nil {
+		return Character{}, err
+	}
+
+	for {
+		if IDExist {
+			characterID, err = getRandomID()
+			if err != nil {
+				return Character{}, err
+			}
+
+			IDExist, err = checkIDExist(characterID)
+			if err != nil {
+				return Character{}, err
+			}
+		} 
+	}	
+
+	if newCharacter.Name == "" {
+		return Character{}, fmt.Errorf("name cannot be empty")
+	}
+
+	if newCharacter.Class == "" {
+		return Character{}, fmt.Errorf("class cannot be empty")
+	}
+
+	if newCharacter.Race == "" {
+		return Character{}, fmt.Errorf("race cannot be empty")
+	}
+
+	if newCharacter.Level < 1 || newCharacter.Level > 20 {
+		return Character{}, fmt.Errorf("invalid level: must be within 1 to 20 range")
+	}
+
+	if newCharacter.Skills == nil {
+		return Character{}, fmt.Errorf("cannot choose 0 skills")
+	}
+
+	c.Name = newCharacter.Name
+	c.Class = newCharacter.Class
+	c.Race = newCharacter.Race
+	c.Level = newCharacter.Level
+	c.SkillChoice.Chosen = newCharacter.Skills
 
 	return c, nil
 }
@@ -70,7 +123,8 @@ func parseHitDie(value string) (int, error) {
 	return parsedValue, nil
 }
 
-func validateReferenceData(class string, referenceMap map[string]ClassInfo) (Character, error) {
+//TODO: make this func the "server validate character using business rules" step for the three step validation (1. js; 2. simple go validation; 3. validation by reference)
+func validateByClassReferenceData(c Character) (Character, error) {
 	
 
 	return Character{}, nil
