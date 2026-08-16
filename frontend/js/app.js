@@ -1,5 +1,6 @@
 const classSelect = document.querySelector("#class");
 const classInfo = document.querySelector("#class-info");
+const form = document.querySelector("#character-form");
 
 //make user able to only choose skills equal to the number of skills cap
 function quantitySkillsCheck (quantity, data) {
@@ -9,6 +10,19 @@ function quantitySkillsCheck (quantity, data) {
     }
 
     return true
+}
+
+async function getClassInfoFromReference (selectedClass) {
+    const response = await fetch(
+        `/reference/classes/${selectedClass}`
+    )
+
+    if (!response.ok) {
+        classInfo.textContent = "could not load class informataion from server."
+        return
+    }
+
+    return response
 }
 
 //changes data from index.html dynamically
@@ -21,14 +35,7 @@ classSelect.addEventListener("change", async function () {
         return;
     }
 
-    const response = await fetch(
-        `/reference/classes/${selectedClass}`
-    );
-
-    if (!response.ok) {
-        classInfo.textContent = "Could not load class information.";
-        return;
-    }
+    const response = await getClassInfoFromReference(selectedClass);
 
     const data = await response.json();
 
@@ -79,15 +86,13 @@ classSelect.addEventListener("change", async function () {
             if (!valid) {
                 event.target.checked = false;
 
-                alert(`You can only choose ${maxSkills} skills.`);
+                alert(`You can only choose ${data.skill_choices.choose} skills.`);
             }
         });
     });
 });
 
 //send form information to the go server and do the first validation of data
-const form = document.querySelector("#character-form");
-
 form.addEventListener("submit", async function(event) {
     event.preventDefault();
 

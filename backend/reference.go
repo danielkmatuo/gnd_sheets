@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-//	"html/template"
 	"net/http"
 	"os"
 	"strconv"
@@ -11,8 +10,8 @@ import (
 )
 
 type ToolChoice struct {
-	Quantity int `json:choose`
-	Categories []string `json:from_categories`
+	Quantity int `json:"choose"`
+	Categories []string `json:"from_categories"`
 }
 
 type Proficiency struct {
@@ -41,33 +40,6 @@ type ClassInfo struct {
 	SkillChoice Skills `json:"skill_choices"`
 	Spells Spellcasting `json:"spellcasting"`
 } 
-
-//TODO: Check if I need this handler after classReferenceHandler implementation
-//func indexHandler(w http.ResponseWriter, r *http.Request) {
-//	tmpl, err := template.ParseFiles("../frontend/index.html")
-//	if err != nil {
-//		http.Error(w, "failed parising character.html file", http.StatusInternalServerError)
-//		return
-//	}
-//	
-//	class := r.FormValue("class")
-//
-//	ciMap, err := getReferenceData()
-//	if err != nil {
-//		http.Error(w, "failed fetching data from the reference classes.json file", http.StatusInternalServerError)
-//		return
-//	}
-//
-//	ci := getClassInfoFromMap(ciMap, class)
-//
-//	err = tmpl.Execute(w, ci)
-//	if err != nil {
-//		http.Error(w, "failed filling the template with class info", http.StatusInternalServerError)
-//		return
-//	}
-//
-//	http.Redirect(w, r, "/characters", http.StatusFound)
-//}
 
 func classReferenceHandler(w http.ResponseWriter, r *http.Request) {
 	className := r.PathValue("class")
@@ -118,26 +90,6 @@ func getReferenceData() (map[string]ClassInfo, error) {
 	return ci, nil
 }
 
-func parseHitDie(value string) (int, error) {
-	parsedString, foundPrefix := strings.CutPrefix(value, "d")
-	if !foundPrefix {
-		return 0, fmt.Errorf("wrong hit die format, must start with d")
-	}
-
-	parsedValue, err := strconv.Atoi(parsedString)
-	if err != nil {
-		return 0, err
-	}
-
-	return parsedValue, nil
-}
-
 func getClassInfoFromMap(ciMap map[string]ClassInfo, class string) ClassInfo {
 	return ciMap[class]
-}
-
-func validateReferenceData(class string, referenceMap map[string]ClassInfo) (Character, error) {
-	
-
-	return Character{}, nil
 }
