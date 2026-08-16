@@ -25,6 +25,7 @@ type Proficiency struct {
 type Skills struct {
 	Cap int `json:"choose"`
 	Possibilities []string `json:"from"`
+	Chosen []string `json:"skills"`
 }
 
 type Spellcasting struct {

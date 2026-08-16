@@ -95,7 +95,11 @@ form.addEventListener("submit", async function(event) {
 
     const character = Object.fromEntries(formData.entries());
 
+    character.skills = formData.getAll("skills");
+
     character.level = Number(character.level);
+
+    console.log(character);
 
     const response = await fetch("/characters/create", {
         method: "POST",
