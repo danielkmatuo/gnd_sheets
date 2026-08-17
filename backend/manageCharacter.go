@@ -10,7 +10,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-//	"strconv"
 )
 
 type Character struct {
@@ -124,7 +123,7 @@ func editCharacterHandler(w http.ResponseWriter, r *http.Request) {
 func editCharacterDoneHandler(w http.ResponseWriter, r *http.Request) {
 	characterID := r.PathValue("id")
 
-	err := editCharacter(characterID, r)
+	err := editCharacter(characterID)
 	if err != nil {
 		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
 		return
@@ -199,17 +198,27 @@ func createJSON(data []byte, ID string) error {
 }
 
 func createCharacter(w http.ResponseWriter, r *http.Request) error {
-	c, err := getCharacterInfo(r)
+	newC, err := getCharacterInfoCreation(r)
 	if err != nil {
 		return err
 	}
 
-	data, err := createCharacterJSON(c)
+	c, err := validateNewCharacter(newC)
+	if err != nil {
+		return err
+	}
+
+	validatedC, err := validateByClassReferenceData(c)
+	if err != nil {
+		return err
+	}
+
+	data, err := createCharacterJSON(validatedC)
 	if err != nil {
 		return err
 	}
 	
-	err = createJSON(data, c.ID)
+	err = createJSON(data, validatedC.ID)
 	if err != nil {
 		return err
 	}
@@ -291,8 +300,8 @@ func getCharacterByID(characterID string) (Character, error) {
 	return c, nil
 }
 
-func editCharacter(characterID string, r *http.Request) error {
-	c, err := getCharacterInfo(r)
+func editCharacter(characterID string) error {
+	c, err := getCharacterByID(characterID)
 	if err != nil {
 		return err
 	}

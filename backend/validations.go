@@ -2,29 +2,10 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"math"
 	"strconv"
 	"strings"
 )
-
-func checkIDExist (characterID string) (bool, error) {
-	files, err := os.ReadDir("../data/characters")
-	exist := false
-
-	for _, file := range(files){
-		if characterID + ".json" == file.Name() {
-			characterID, err = getRandomID()
-			if err != nil {
-				return false, err
-			}
-
-			exist = true
-			break
-		}
-	}
-
-	return exist, nil
-}
 
 //TODO: refactor validateExistingCharacter to fit the new js + go workflow and to ensure data is properly handled before storage
 func validateNewCharacter(newCharacter NewCharacter) (Character, error) {
@@ -65,30 +46,56 @@ func validateNewCharacter(newCharacter NewCharacter) (Character, error) {
 	return c, nil
 }
 
-func validateExistingCharacter(s []string) (Character, error){
-	oldChar, err := getCharacterByID(s[0])
+func validateExistingCharacter(c Character) (Character, error){
+	var validated Character
+	referenceMap, err := getReferenceData()
 	if err != nil {
 		return Character{}, err
 	}
 
-	if s[1] == "" {
-		s[1] = oldChar.Name
-	}
-	if s[3] == "" {
-		s[3] = oldChar.Class
-	}
-	if s[4] == "" {
-		s[4] = oldChar.Race
+	reference := referenceMap[c.Class]
+
+	if len(c.SkillChoice.Chosen) != reference.SkillChoice.Cap {
+		return Character{}, fmt.Errorf("character must have exact %d", reference.SkillChoice.Cap)
+	} 
+
+	if c.Level == 1 {
+		validated.MaxHp, err = parseHitDie(reference.HitDie)
+		if err != nil {
+			return Character{}, err
+		}
+	} else {
+		hitDieValue, err := parseHitDie(reference.HitDie)
+		if err != nil {
+			return Character{}, err
+		}
+
+		hitDieStep := int(math.Floor(float64(hitDieValue / 2)))
+		validated.MaxHp = hitDieValue + hitDieStep * (c.Level - 1)
 	}
 
-//	level, err := strconv.Atoi(s[2])
-//	if err != nil {
-//		return Character{}, err
-//	}
+	//passing values from c to validated
+	validated.AC = c.AC
+	validated.Speed = c.Speed
+	validated.Level = c.Level
+	validated.Class = c.Class
+	validated.ID = c.ID
+	validated.Name = c.Name
+	validated.CurrHp = c.CurrHp
+	validated.Race = c.Race
 
+	//left out c.CurrHp on purpose, must be filled during character creation or editing, since I'm reusing this func for both
+	validated.Profs.Armor = reference.Profs.Armor
+	validated.Profs.Weapon = reference.Profs.Weapon
+	validated.Profs.Tools = reference.Profs.Tools
+	validated.Profs.Saving = reference.Profs.Saving
+	validated.ToolsChoice = reference.ToolsChoice
+	validated.SkillChoice.Cap = reference.SkillChoice.Cap
+	validated.SkillChoice.Possibilities = reference.SkillChoice.Possibilities
+	validated.Spells = reference.Spells
+	//also left out AC and speed, which also should be filled following a race and equipment based validations
 
-	//TODO: return correct Character{} struct
-	return Character{}, nil
+	return validated, nil
 }
 
 func parseHitDie(value string) (int, error) {
@@ -105,9 +112,43 @@ func parseHitDie(value string) (int, error) {
 	return parsedValue, nil
 }
 
-//TODO: make this func the "server validate character using business rules" step for the three step validation (1. js; 2. simple go validation; 3. validation by reference)
 func validateByClassReferenceData(c Character) (Character, error) {
-	
+	classInfoMap, err := getReferenceData()	
+	if err != nil {
+		return Character{}, err
+	}
 
-	return Character{}, nil
+	referenceCharacter := classInfoMap[c.Class]
+	
+	if len(c.SkillChoice.Chosen) != referenceCharacter.SkillChoice.Cap {
+		return Character{}, fmt.Errorf("character must have exact %d", referenceCharacter.SkillChoice.Cap)
+	} 
+
+	if c.Level == 1 {
+		c.MaxHp, err = parseHitDie(referenceCharacter.HitDie)
+		if err != nil {
+			return Character{}, err
+		}
+	} else {
+		hitDieValue, err := parseHitDie(referenceCharacter.HitDie)
+		if err != nil {
+			return Character{}, err
+		}
+
+		hitDieStep := int(math.Floor(float64(hitDieValue / 2)))
+		c.MaxHp = hitDieValue + hitDieStep * (c.Level - 1)
+	}
+
+	//left out c.CurrHp on purpose, must be filled during character creation or editing, since I'm reusing this func for both
+	c.Profs.Armor = referenceCharacter.Profs.Armor
+	c.Profs.Weapon = referenceCharacter.Profs.Weapon
+	c.Profs.Tools = referenceCharacter.Profs.Tools
+	c.Profs.Saving = referenceCharacter.Profs.Saving
+	c.ToolsChoice = referenceCharacter.ToolsChoice
+	c.SkillChoice.Cap = referenceCharacter.SkillChoice.Cap
+	c.SkillChoice.Possibilities = referenceCharacter.SkillChoice.Possibilities
+	c.Spells = referenceCharacter.Spells
+	//also left out AC and speed, which also should be filled following a race and equipment based validations
+
+	return c, nil
 }

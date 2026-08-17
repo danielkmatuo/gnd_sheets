@@ -34,7 +34,7 @@ type ClassInfo struct {
 	Name string `json:"name"`
 	HitDie string `json:"hit_die"`
 	Profs Proficiency `json:"proficiencies"`
-	WhatTools []ToolChoice `json:"tool_proficiency_choices"`
+	ToolsChoice []ToolChoice `json:"tool_proficiency_choices"`
 	SkillChoice Skills `json:"skill_choices"`
 	Spells Spellcasting `json:"spellcasting"`
 } 
@@ -42,17 +42,9 @@ type ClassInfo struct {
 func classReferenceHandler(w http.ResponseWriter, r *http.Request) {
 	className := r.PathValue("class")
 
-	data, err := os.ReadFile("../data/reference/classes.json")
+	classes, err := getReferenceData()
 	if err != nil {
-		http.Error(w, "could not read class reference data", http.StatusInternalServerError)
-		return
-	}
-
-	var classes map[string]ClassInfo
-
-	err = json.Unmarshal(data, &classes)
-	if err != nil {
-		http.Error(w, "could not parse class reference data", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
 		return
 	}
 
@@ -83,11 +75,5 @@ func getReferenceData() (map[string]ClassInfo, error) {
 		return map[string]ClassInfo{}, err
 	}
 
-	fmt.Printf("decoded reference json data: \n%v", ci) 
-
 	return ci, nil
-}
-
-func getClassInfoFromMap(ciMap map[string]ClassInfo, class string) ClassInfo {
-	return ciMap[class]
 }
