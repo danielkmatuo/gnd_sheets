@@ -94,12 +94,8 @@ func viewCharacterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func editCharacterHandler(w http.ResponseWriter, r *http.Request) {
+func getCharacterDataHandler(w http.ResponseWriter, r *http.Request) {
 	characterID := r.PathValue("id")
-	if characterID == "" {
-		http.Error(w, "ID not found", http.StatusNotFound)
-		return
-	}
 
 	c, err := getCharacterByID(characterID)
 	if err != nil {
@@ -107,19 +103,17 @@ func editCharacterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	tmpl, err := template.ParseFiles("../frontend/edit.html")
+	w.Header().Set("Content-Type", "application/json")	
+	err = json.NewEncoder(w).Encode(c)
 	if err != nil {
-		http.Error(w, "wasnt able to parse html file", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
 		return
 	}
 
-	err = tmpl.Execute(w, c)
-	if err != nil {
-		http.Error(w, "wasnt able to render html file", http.StatusInternalServerError)
-		return
-	}
+	http.Redirect(w, r, "/character/edit", http.StatusFound)
 }
 
+//TODO: make this func receive an edited character from the frontend and then make it validate the edited character
 func editCharacterDoneHandler(w http.ResponseWriter, r *http.Request) {
 	characterID := r.PathValue("id")
 
