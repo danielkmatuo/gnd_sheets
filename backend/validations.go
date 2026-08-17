@@ -35,25 +35,6 @@ func validateNewCharacter(newCharacter NewCharacter) (Character, error) {
 		return Character{}, err
 	}	
 
-	IDExist, err := checkIDExist(characterID)
-	if err != nil {
-		return Character{}, err
-	}
-
-	for {
-		if IDExist {
-			characterID, err = getRandomID()
-			if err != nil {
-				return Character{}, err
-			}
-
-			IDExist, err = checkIDExist(characterID)
-			if err != nil {
-				return Character{}, err
-			}
-		} 
-	}	
-
 	if newCharacter.Name == "" {
 		return Character{}, fmt.Errorf("name cannot be empty")
 	}
@@ -74,6 +55,7 @@ func validateNewCharacter(newCharacter NewCharacter) (Character, error) {
 		return Character{}, fmt.Errorf("cannot choose 0 skills")
 	}
 
+	c.ID = characterID
 	c.Name = newCharacter.Name
 	c.Class = newCharacter.Class
 	c.Race = newCharacter.Race
