@@ -17,21 +17,30 @@ func jsEditHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "../frontend/js/edit.js")
 }
 
+func jsViewHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "../frontend/js/view.js")
+}
+
 func editPageHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "../frontend/edit.html")
+}
+
+func viewPageHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "../frontend/character.html")
 }
 
 func configureServer() {
 	http.HandleFunc("GET /{$}", indexHandler)
 	http.HandleFunc("GET /js/create", jsCreateHandler)
 	http.HandleFunc("GET /js/edit", jsEditHandler)
+	http.HandleFunc("GET /js/view", jsViewHandler)
 
 	http.HandleFunc("GET /reference/classes/{class}", classReferenceHandler)
 	http.HandleFunc("GET /characters", charactersHandler)
 	http.HandleFunc("POST /characters/create", createCharacterHandler)
-	http.HandleFunc("GET /character/{id}/view", viewCharacterHandler)
+	http.HandleFunc("GET /character/view", viewPageHandler)
 	http.HandleFunc("GET /character/edit", editPageHandler)
-	http.HandleFunc("GET /character/{id}/data", getCharacterDataHandler)
+	http.HandleFunc("GET /character/{id}/data", sendCharacterDataHandler)
 	http.HandleFunc("POST /character/{id}/edit/done", editCharacterDoneHandler)
 }
 

@@ -68,49 +68,34 @@ func createCharacterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func viewCharacterHandler(w http.ResponseWriter, r *http.Request) {
+func sendCharacterDataHandler(w http.ResponseWriter, r *http.Request) {
 	characterID := r.PathValue("id")
 	if characterID == "" {
 		http.Error(w, "ID not found", http.StatusNotFound)
-		return
 	}
 
-	c, err := getCharacterByID(characterID)
+	err := sendCharacterData(w, characterID)
 	if err != nil {
-		http.Error(w, "failed to find the character file by ID", http.StatusNotFound)
-		return
-	}
-
-	tmpl, err := template.ParseFiles("../frontend/character.html")
-	if err != nil {
-		http.Error(w, "failed parising character.html file", http.StatusInternalServerError)
-		return
-	}
-
-	err = tmpl.Execute(w, c)
-	if err != nil {
-		http.Error(w, "failed to fill character info into template", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
 		return
 	}
 }
 
-func getCharacterDataHandler(w http.ResponseWriter, r *http.Request) {
-	characterID := r.PathValue("id")
-
+func sendCharacterData(w http.ResponseWriter, characterID string) error {
 	c, err := getCharacterByID(characterID)
 	if err != nil {
 		http.Error(w, "couldnt get character by ID", http.StatusNotFound)
-		return
+		return err
 	}
 	
 	w.Header().Set("Content-Type", "application/json")	
 	err = json.NewEncoder(w).Encode(c)
 	if err != nil {
 		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
-		return
+		return err
 	}
 
-	http.Redirect(w, r, "/character/edit", http.StatusFound)
+	return nil
 }
 
 //TODO: make this func receive an edited character from the frontend and then make it validate the edited character

@@ -5,13 +5,11 @@ const characterRace = document.querySelector("#race");
 const characterSkills = document.querySelector("#skills");
 
 async function getCharacterStructFromServer() {
-    parts = path.split("/");
-    id = parts[2];
-    const response = await fetch("/character/${id}/edit");    
+    const id = path.match(/^\/character\/([^/]+)\/edit$/);
+    const response = await fetch(`/character/${id}/data`);    
     const data = await response.json();
 
-    characterName.value = data.name;
-    characterClass.value = data.class;
-    characterRace.value = data.race;
-    characterSkills.value = data.skill_choices.skills.join(", ");
+    return data;
 }
+
+getCharacterStructFromServer();
