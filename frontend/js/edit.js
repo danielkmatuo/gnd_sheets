@@ -5,7 +5,7 @@ const characterRace = document.querySelector("#race");
 const characterSkills = document.querySelector("#skills");
 
 async function getCharacterStructFromServer() {
-    const id = path.match(/^\/character\/([^/]+)\/edit$/);
+    const id = path.match(/^\/character\/([^/]+)\/data$/);
     const response = await fetch(`/character/${id}/data`);    
     const data = await response.json();
 

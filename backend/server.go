@@ -38,9 +38,9 @@ func configureServer() {
 	http.HandleFunc("GET /reference/classes/{class}", classReferenceHandler)
 	http.HandleFunc("GET /characters", charactersHandler)
 	http.HandleFunc("POST /characters/create", createCharacterHandler)
-	http.HandleFunc("GET /character/view", viewPageHandler)
-	http.HandleFunc("GET /character/edit", editPageHandler)
 	http.HandleFunc("GET /character/{id}/data", sendCharacterDataHandler)
+	http.HandleFunc("GET /character/{id}/edit", editPageHandler)
+	http.HandleFunc("GET /character/{id}/view", viewPageHandler)
 	http.HandleFunc("POST /character/{id}/edit/done", editCharacterDoneHandler)
 }
 

@@ -72,6 +72,7 @@ func sendCharacterDataHandler(w http.ResponseWriter, r *http.Request) {
 	characterID := r.PathValue("id")
 	if characterID == "" {
 		http.Error(w, "ID not found", http.StatusNotFound)
+		return
 	}
 
 	err := sendCharacterData(w, characterID)
@@ -79,23 +80,6 @@ func sendCharacterDataHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
 		return
 	}
-}
-
-func sendCharacterData(w http.ResponseWriter, characterID string) error {
-	c, err := getCharacterByID(characterID)
-	if err != nil {
-		http.Error(w, "couldnt get character by ID", http.StatusNotFound)
-		return err
-	}
-	
-	w.Header().Set("Content-Type", "application/json")	
-	err = json.NewEncoder(w).Encode(c)
-	if err != nil {
-		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
-		return err
-	}
-
-	return nil
 }
 
 //TODO: make this func receive an edited character from the frontend and then make it validate the edited character
@@ -143,6 +127,21 @@ func getRandomID() (string, error) {
 			return randomID, nil
 		}
 	}
+}
+
+func sendCharacterData(w http.ResponseWriter, characterID string) error {
+	c, err := getCharacterByID(characterID)
+	if err != nil {
+		return err
+	}
+	
+	w.Header().Set("Content-Type", "application/json")	
+	err = json.NewEncoder(w).Encode(c)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func getCharacterInfoCreation(r *http.Request) (NewCharacter, error) {
