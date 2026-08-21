@@ -1,6 +1,6 @@
 const classSelect = document.querySelector("#class");
 const classInfo = document.querySelector("#class-info");
-const characterStats = document.querySelector("#character_stats");
+const characterStats = document.querySelector("#abilities");
 const form = document.querySelector("#character-form");
 
 //make user able to only choose skills equal to the number of skills cap
@@ -26,8 +26,34 @@ async function getClassInfoFromReference (selectedClass) {
     return response
 }
 
-function createStatsSelection() {
-    
+function instantiateCostsMap() {
+    const scoresCosts = new Map(); 
+
+    scoresCosts.set(8, 0);
+    scoresCosts.set(9, 1);
+    scoresCosts.set(10, 2);
+    scoresCosts.set(11, 3);
+    scoresCosts.set(12, 4);
+    scoresCosts.set(13, 5);
+    scoresCosts.set(14, 7);
+    scoresCosts.set(15, 9);
+
+    return scoresCosts;
+}
+
+function validateStatsSelection(scores, scoresCost) {
+    const maxCost = 27;
+    var cost = 0;
+
+    for (i = 0; i < scores.length; i++) {
+        cost += scoresCosts.get(scores[i]);
+    }
+
+    if (cost > maxCost) {
+        return false, cost;
+    }
+
+    return true, cost;
 }
 
 //changes data from index.html dynamically
@@ -96,6 +122,27 @@ classSelect.addEventListener("change", async function () {
         });
     });
 });
+
+//validate character ability scores from frontend, then send the current cost to server for further validation
+characterStats.addEventListener("change", async function(){
+    const characterStr = Number(characterStats.str.value);
+    const characterDex = Number(characterStats.dex.value);
+    const characterCon = Number(characterStats.con.value);
+    const characterInt = Number(characterStats.int.value);
+    const characterWis = Number(characterStats.wis.value);
+    const characterCha = Number(characterStats.cha.value);
+
+    const scores = [characterStr, characterDex, characterCon, characterInt, characterWis, characterCha];
+    const costsMap = iinstantiateCostsMap();
+    var costOk, currCost = validateStatsSelection(scores, costsMap);
+
+    if (!costOk) {
+        alert("your current score is above 27");
+    }
+
+    characterStats.curr_cost.textContent = "Current cost: " + currCost;
+
+})
 
 //send form information to the go server and do the first validation of data
 form.addEventListener("submit", async function(event) {

@@ -31,28 +31,28 @@ func validateNewCharacter(newCharacter NewCharacter) (Character, error) {
 		return Character{}, fmt.Errorf("invalid level: must be within 1 to 20 range")
 	}
 
-	if newCharacter.Stats.Str < 1 || newCharacter.Stats.Str > 20 {
-		return Character{}, fmt.Errorf("invalid STR: must be within 1 to 20 range")
+	if newCharacter.Stats.Str < 8 || newCharacter.Stats.Str > 15 {
+		return Character{}, fmt.Errorf("invalid STR: must be within 8 to 15 range")
 	}
 	
-	if newCharacter.Stats.Dex < 1 || newCharacter.Stats.Dex > 20 {
-		return Character{}, fmt.Errorf("invalid DEX: must be within 1 to 20 range")
+	if newCharacter.Stats.Dex < 8 || newCharacter.Stats.Dex > 15 {
+		return Character{}, fmt.Errorf("invalid DEX: must be within 8 to 15 range")
 	}
 	
-	if newCharacter.Stats.Con < 1 || newCharacter.Stats.Con > 20 {
-		return Character{}, fmt.Errorf("invalid CON: must be within 1 to 20 range")
+	if newCharacter.Stats.Con < 8 || newCharacter.Stats.Con > 15 {
+		return Character{}, fmt.Errorf("invalid CON: must be within 8 to 15 range")
 	}
 	
-	if newCharacter.Stats.Int < 1 || newCharacter.Stats.Int > 20 {
-		return Character{}, fmt.Errorf("invalid INT: must be within 1 to 20 range")
+	if newCharacter.Stats.Int < 8 || newCharacter.Stats.Int > 15 {
+		return Character{}, fmt.Errorf("invalid INT: must be within 8 to 15 range")
 	}
 	
-	if newCharacter.Stats.Wis < 1 || newCharacter.Stats.Wis > 20 {
-		return Character{}, fmt.Errorf("invalid WIS: must be within 1 to 20 range")
+	if newCharacter.Stats.Wis < 8 || newCharacter.Stats.Wis > 15 {
+		return Character{}, fmt.Errorf("invalid WIS: must be within 8 to 15 range")
 	}
 	
-	if newCharacter.Stats.Cha < 1 || newCharacter.Stats.Cha > 20 {
-		return Character{}, fmt.Errorf("invalid CHA: must be within 1 to 20 range")
+	if newCharacter.Stats.Cha < 8 || newCharacter.Stats.Cha > 15 {
+		return Character{}, fmt.Errorf("invalid CHA: must be within 8 to 15 range")
 	}
 
 	if newCharacter.Skills == nil {

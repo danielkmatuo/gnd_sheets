@@ -39,9 +39,53 @@
                 </select>
             </div>
             <div>
+                <label for="race">Race</label>
+                <select id="race" name="race">
+                    <option value="dragonborn">Dragonborn</option>
+                    <option value="dwarf">Dwarf</option>
+                    <option value="elf">Elf</option>
+                    <option value="gnome">Gnome</option>
+                    <option value="halfelf">Half-elf</option>
+                    <option value="halforc">Half-orc</option>
+                    <option value="halfling">Halfling</option>
+                    <option value="human">Human</option>
+                    <option value="tiefling">Tiefling</option>
+                </select>
+            </div>
+            <div id="abilities">
+                <fieldset>
+                    <legend>Choose your character ability scores</legend>
+                    <button id="less-str" type="button">-</button>
+                    <input id="str" type="text" placeholder="8"></input>
+                    <button id="more-str" type="button">+</button>
+                    
+                    <button id="less-dex" type="button">-</button>
+                    <input id="dex" type="text" placeholder="8"></input>
+                    <button id="more-dex" type="button">+</button>
+                    
+                    <button id="less-con" type="button">-</button>
+                    <input id="con" type="text" placeholder="8"></input>
+                    <button id="more-con" type="button">+</button>
+                    
+                    <button id="less-int" type="button">-</button>
+                    <input id="int" type="text" placeholder="8"></input>
+                    <button id="more-int" type="button">+</button>
+                    
+                    <button id="less-wis" type="button">-</button>
+                    <input id="wis" type="text" placeholder="8"></input>
+                    <button id="more-wis" type="button">+</button>
+                    
+                    <button id="less-cha" type="button">-</button>
+                    <input id="cha" type="text" placeholder="8"></input>
+                    <button id="more-cha" type="button">+</button>
+
+                    <p id="curr-cost"></p>
+                </fieldset>
+            </div>
+            <div>
                 <label for="class">Class</label>
                 <select id="class" name="class">
-                    <option value="artificer">Artificer</option>
+                    <option value="">--</option>
                     <option value="barbarian">Barbarian</option>
                     <option value="bard">Bard</option>
                     <option value="cleric">Cleric</option>
@@ -56,21 +100,7 @@
                     <option value="wizard">Wizard</option>
                 </select>
             </div>
-            <div>
-                <label for="race">Race</label>
-                <select id="race" name="race">
-                    <option value="dragonborn">Dragonborn</option>
-                    <option value="dwarf">Dwarf</option>
-                    <option value="elf">Elf</option>
-                    <option value="gnome">Gnome</option>
-                    <option value="halfelf">Half-elf</option>
-                    <option value="halforc">Half-orc</option>
-                    <option value="halfling">Halfling</option>
-                    <option value="human">Human</option>
-                    <option value="tiefling">Tiefling</option>
-                </select>
-            </div>
-            <div id="character_stats"></div>
+            <div id="character-stats"></div>
             <div id="class-info"></div>
             <button type="submit">Create character</button>
         </form>
