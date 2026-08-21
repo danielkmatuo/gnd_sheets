@@ -1,5 +1,6 @@
 const classSelect = document.querySelector("#class");
 const classInfo = document.querySelector("#class-info");
+const characterStats = document.querySelector("#character_stats");
 const form = document.querySelector("#character-form");
 
 //make user able to only choose skills equal to the number of skills cap
@@ -23,6 +24,10 @@ async function getClassInfoFromReference (selectedClass) {
     }
 
     return response
+}
+
+function createStatsSelection() {
+    
 }
 
 //changes data from index.html dynamically

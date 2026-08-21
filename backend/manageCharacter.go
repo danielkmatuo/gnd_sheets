@@ -12,6 +12,15 @@ import (
 	"path/filepath"
 )
 
+type Attributes struct {
+	Str int `json:"str"`
+	Dex int `json:"dex"`
+	Con int `json:"con"`
+	Int int `json:"int"`
+	Wis int `json:"wis"`
+	Cha int `json:"cha"`
+}
+
 type Character struct {
 	ID string    `json:"id"`
 	Name string  `json:"name"`
@@ -26,6 +35,7 @@ type Character struct {
 	Spells Spellcasting `json:"spellcasting"`
 	AC int `json:"ac"`
 	Speed float64 `json:"speed"`
+	Stats Attributes `json:"stats"`
 }
 
 type NewCharacter struct {
@@ -34,6 +44,8 @@ type NewCharacter struct {
 	Class string `json:"class"`
 	Race string `json:"race"`
 	Skills []string `json:"skills"`
+	Stats Attributes `json:"stats"`
+	AbilityCost int `json:"cost"`
 }
 
 func charactersHandler(w http.ResponseWriter, r *http.Request) {

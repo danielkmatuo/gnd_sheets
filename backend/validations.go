@@ -7,7 +7,6 @@ import (
 	"strings"
 )
 
-//TODO: refactor validateExistingCharacter to fit the new js + go workflow and to ensure data is properly handled before storage
 func validateNewCharacter(newCharacter NewCharacter) (Character, error) {
 	c := Character{}
 
@@ -32,8 +31,37 @@ func validateNewCharacter(newCharacter NewCharacter) (Character, error) {
 		return Character{}, fmt.Errorf("invalid level: must be within 1 to 20 range")
 	}
 
+	if newCharacter.Stats.Str < 1 || newCharacter.Stats.Str > 20 {
+		return Character{}, fmt.Errorf("invalid STR: must be within 1 to 20 range")
+	}
+	
+	if newCharacter.Stats.Dex < 1 || newCharacter.Stats.Dex > 20 {
+		return Character{}, fmt.Errorf("invalid DEX: must be within 1 to 20 range")
+	}
+	
+	if newCharacter.Stats.Con < 1 || newCharacter.Stats.Con > 20 {
+		return Character{}, fmt.Errorf("invalid CON: must be within 1 to 20 range")
+	}
+	
+	if newCharacter.Stats.Int < 1 || newCharacter.Stats.Int > 20 {
+		return Character{}, fmt.Errorf("invalid INT: must be within 1 to 20 range")
+	}
+	
+	if newCharacter.Stats.Wis < 1 || newCharacter.Stats.Wis > 20 {
+		return Character{}, fmt.Errorf("invalid WIS: must be within 1 to 20 range")
+	}
+	
+	if newCharacter.Stats.Cha < 1 || newCharacter.Stats.Cha > 20 {
+		return Character{}, fmt.Errorf("invalid CHA: must be within 1 to 20 range")
+	}
+
 	if newCharacter.Skills == nil {
 		return Character{}, fmt.Errorf("cannot choose 0 skills")
+	}
+
+	abilityCostOk := validateAbilityCost(newCharacter.AbilityCost)	
+	if !abilityCostOk {
+		return c, fmt.Errorf("ability cost cannot be negative neither above 27")
 	}
 
 	c.ID = characterID
@@ -42,8 +70,16 @@ func validateNewCharacter(newCharacter NewCharacter) (Character, error) {
 	c.Race = newCharacter.Race
 	c.Level = newCharacter.Level
 	c.SkillChoice.Chosen = newCharacter.Skills
+	c.Stats = newCharacter.Stats
 
 	return c, nil
+}
+
+func validateAbilityCost(cost int) bool {
+	if cost > 27 || cost < 0 {
+		return false
+	}
+	return true
 }
 
 func validateExistingCharacter(c Character) (Character, error){
