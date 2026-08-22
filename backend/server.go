@@ -3,29 +3,60 @@ package backend
 import (
 	"net/http"
 	"fmt"
+	"path/filepath"
 )
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "../frontend/index.html")
+	root := findRootDir() 
+	if root == "" {
+		http.Error(w, "couldnt find root", http.StatusInternalServerError)
+	}
+
+	http.ServeFile(w, r, filepath.Join(root, "frontend", "index.html"))
 }
 
 func jsCreateHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "../frontend/js/create.js")
+	root := findRootDir() 
+	if root == "" {
+		http.Error(w, "couldnt find root", http.StatusInternalServerError)
+	}
+	
+	http.ServeFile(w, r, filepath.Join(root, "frontend", "js", "create.js"))
 }
 
 func jsEditHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "../frontend/js/edit.js")
+	root := findRootDir() 
+	if root == "" {
+		http.Error(w, "couldnt find root", http.StatusInternalServerError)
+	}
+	
+	http.ServeFile(w, r, filepath.Join(root, "frontend", "js", "edit.js"))
 }
 
 func jsViewHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "../frontend/js/view.js")
+	root := findRootDir() 
+	if root == "" {
+		http.Error(w, "couldnt find root", http.StatusInternalServerError)
+	}
+	
+	http.ServeFile(w, r, filepath.Join(root, "frontend", "js", "view.js"))
 }
 
 func editPageHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "../frontend/edit.html")
+	root := findRootDir() 
+	if root == "" {
+		http.Error(w, "couldnt find root", http.StatusInternalServerError)
+	}
+	
+	http.ServeFile(w, r, filepath.Join(root, "frontend", "edit.html"))
 }
 
 func viewPageHandler(w http.ResponseWriter, r *http.Request) {
+	root := findRootDir() 
+	if root == "" {
+		http.Error(w, "couldnt find root", http.StatusInternalServerError)
+	}
+
 	http.ServeFile(w, r, "../frontend/character.html")
 }
 

@@ -13,7 +13,6 @@ func findRootDir() string {
 	}
 
 	exePath := filepath.Dir(exe)
-	fmt.Printf("root: %v", exePath)
 	return exePath
 }
 
