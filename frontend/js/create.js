@@ -46,14 +46,14 @@ function validateStatsSelection(scores, scoresCost) {
     var cost = 0;
 
     for (i = 0; i < scores.length; i++) {
-        cost += scoresCosts.get(scores[i]);
+        cost += scoresCost.get(scores[i]);
     }
 
     if (cost > maxCost) {
-        return false, cost;
+        return [false, cost];
     }
 
-    return true, cost;
+    return [true, cost];
 }
 
 //changes data from index.html dynamically
@@ -125,23 +125,22 @@ classSelect.addEventListener("change", async function () {
 
 //validate character ability scores from frontend, then send the current cost to server for further validation
 characterStats.addEventListener("change", async function(){
-    const characterStr = Number(characterStats.str.value);
-    const characterDex = Number(characterStats.dex.value);
-    const characterCon = Number(characterStats.con.value);
-    const characterInt = Number(characterStats.int.value);
-    const characterWis = Number(characterStats.wis.value);
-    const characterCha = Number(characterStats.cha.value);
+    const characterStr = Number(document.querySelector("#str").value);
+    const characterDex = Number(document.querySelector("#dex").value);
+    const characterCon = Number(document.querySelector("#con").value);
+    const characterInt = Number(document.querySelector("#int").value);
+    const characterWis = Number(document.querySelector("#wis").value);
+    const characterCha = Number(document.querySelector("#cha").value);
 
     const scores = [characterStr, characterDex, characterCon, characterInt, characterWis, characterCha];
-    const costsMap = iinstantiateCostsMap();
-    var costOk, currCost = validateStatsSelection(scores, costsMap);
+    const costsMap = instantiateCostsMap();
+    var [costOk, currCost] = validateStatsSelection(scores, costsMap);
 
     if (!costOk) {
         alert("your current score is above 27");
     }
 
-    characterStats.curr_cost.textContent = "Current cost: " + currCost;
-
+    document.querySelector("#curr-cost").textContent = "Current cost: " + currCost;
 })
 
 //send form information to the go server and do the first validation of data
@@ -149,11 +148,20 @@ form.addEventListener("submit", async function(event) {
     event.preventDefault();
 
     const formData = new FormData(form);
-
     const character = Object.fromEntries(formData.entries());
+    const statNames = ["str", "dex", "con", "int", "wis", "cha"];
+
+    character.stats = Object.fromEntries(
+        statNames.map(function(stat){
+            return [stat, Number(character[stat])];
+        })
+    );
+
+    for (const stat of statNames) {
+        delete character[stat];
+    }
 
     character.skills = formData.getAll("skills");
-
     character.level = Number(character.level);
 
     console.log(character);

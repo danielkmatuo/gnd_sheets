@@ -45,7 +45,6 @@ type NewCharacter struct {
 	Race string `json:"race"`
 	Skills []string `json:"skills"`
 	Stats Attributes `json:"stats"`
-	AbilityCost int `json:"cost"`
 }
 
 func charactersHandler(w http.ResponseWriter, r *http.Request) {
@@ -199,6 +198,11 @@ func createCharacter(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	validatedC, err := validateByClassReferenceData(c)
+	if err != nil {
+		return err
+	}
+
+	validatedC, err = calculateDynamicallyNewCharacter(validatedC)
 	if err != nil {
 		return err
 	}

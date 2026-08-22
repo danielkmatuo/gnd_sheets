@@ -7,6 +7,48 @@ import (
 	"strings"
 )
 
+func validateByClassReferenceData(c Character) (Character, error) {
+	classInfoMap, err := getReferenceData()	
+	if err != nil {
+		return Character{}, err
+	}
+
+	referenceCharacter := classInfoMap[c.Class]
+	
+	if len(c.SkillChoice.Chosen) != referenceCharacter.SkillChoice.Cap {
+		return Character{}, fmt.Errorf("character must have exact %d", referenceCharacter.SkillChoice.Cap)
+	} 
+
+	if c.Level == 1 {
+		c.MaxHp, err = parseHitDie(referenceCharacter.HitDie)
+		if err != nil {
+			return Character{}, err
+		}
+	} else {
+		hitDieValue, err := parseHitDie(referenceCharacter.HitDie)
+		if err != nil {
+			return Character{}, err
+		}
+
+		conBonus := calculateStatBonus(c.Stats.Con)
+		hitDieStep := int(math.Ceil(float64(hitDieValue / 2)))
+		c.MaxHp = hitDieValue + hitDieStep * (c.Level - 1) + conBonus * (c.Level - 1)
+	}
+
+	//left out c.CurrHp on purpose, must be filled during character creation or editing, since I'm reusing this func for both
+	c.Profs.Armor = referenceCharacter.Profs.Armor
+	c.Profs.Weapon = referenceCharacter.Profs.Weapon
+	c.Profs.Tools = referenceCharacter.Profs.Tools
+	c.Profs.Saving = referenceCharacter.Profs.Saving
+	c.ToolsChoice = referenceCharacter.ToolsChoice
+	c.SkillChoice.Cap = referenceCharacter.SkillChoice.Cap
+	c.SkillChoice.Possibilities = referenceCharacter.SkillChoice.Possibilities
+	c.Spells = referenceCharacter.Spells
+	//also left out AC and speed, which also should be filled following a race and equipment based validations
+
+	return c, nil
+}
+
 func validateNewCharacter(newCharacter NewCharacter) (Character, error) {
 	c := Character{}
 
@@ -59,7 +101,7 @@ func validateNewCharacter(newCharacter NewCharacter) (Character, error) {
 		return Character{}, fmt.Errorf("cannot choose 0 skills")
 	}
 
-	abilityCostOk := validateAbilityCost(newCharacter.AbilityCost)	
+	abilityCostOk := validateAbilityCost(newCharacter.Stats)	
 	if !abilityCostOk {
 		return c, fmt.Errorf("ability cost cannot be negative neither above 27")
 	}
@@ -73,13 +115,6 @@ func validateNewCharacter(newCharacter NewCharacter) (Character, error) {
 	c.Stats = newCharacter.Stats
 
 	return c, nil
-}
-
-func validateAbilityCost(cost int) bool {
-	if cost > 27 || cost < 0 {
-		return false
-	}
-	return true
 }
 
 func validateExistingCharacter(c Character) (Character, error){
@@ -148,43 +183,101 @@ func parseHitDie(value string) (int, error) {
 	return parsedValue, nil
 }
 
-func validateByClassReferenceData(c Character) (Character, error) {
-	classInfoMap, err := getReferenceData()	
+func validateAbilityCost(stats Attributes) bool {
+	statsValues := [6]int{stats.Str, stats.Dex, stats.Con, stats.Int, stats.Wis, stats.Cha}
+	costMap := make(map[int]int)
+	allowedStatsValues := [8]int{8, 9, 10, 11, 12, 13, 14, 15}
+	allowedCostsValues := [8]int{0, 1, 2, 3, 4, 5, 7, 9}
+
+	for i, stat := range allowedStatsValues{
+		costMap[stat] = allowedCostsValues[i]	
+	}
+
+	currCost := 0
+
+	for _, value := range statsValues {
+		currCost += costMap[value]	
+	}
+
+	if currCost > 27 || currCost < 0 {
+		return false
+	}
+
+	return true
+}
+
+func calculateStatBonus(stat int) int {
+	baselineStatValue := 10
+	var bonus int
+
+	if stat % 2 == 0 {
+		if stat >= baselineStatValue {
+			//if str = 12, then stat - baseline = 12 - 10  = 2
+			//then 2/2 = +1 = str bonus
+			bonus = (stat - baselineStatValue) / 2
+		} else {
+			//if str = 8, then baseline - stat = 10 - 8 = 2
+			//then 2*-1 = -2 -> -2/2 = -1 = str bonus
+			bonus = ((baselineStatValue - stat) * (-1)) / 2
+		}
+
+		return bonus
+	}
+
+	if stat < baselineStatValue {
+		//add +1 to normalize the score -> if str = 7, then baseline - stat + 1 = 10 - 7 + 1 = 10 - 6 = 4
+		//then 4 * -1 = -4 -> -4/2 = -2 = str bonus
+		bonus = ((baselineStatValue - stat + 1) * (-1)) / 2	
+		return bonus
+	}
+
+	//add -1 to normalize the score -> if str = 13, then stat - baseline - 1 = 13 - 10 - 1 = 13 - 11 = 2
+	//then 2/2 = +1 = str bonus
+	bonus = (stat - baselineStatValue - 1) / 2
+
+	return bonus
+}
+
+func calculateDynamicallyNewCharacter(c Character) (Character, error) {
+	referenceMap, err := getReferenceData()
 	if err != nil {
 		return Character{}, err
 	}
 
-	referenceCharacter := classInfoMap[c.Class]
-	
-	if len(c.SkillChoice.Chosen) != referenceCharacter.SkillChoice.Cap {
-		return Character{}, fmt.Errorf("character must have exact %d", referenceCharacter.SkillChoice.Cap)
-	} 
-
-	if c.Level == 1 {
-		c.MaxHp, err = parseHitDie(referenceCharacter.HitDie)
-		if err != nil {
-			return Character{}, err
-		}
-	} else {
-		hitDieValue, err := parseHitDie(referenceCharacter.HitDie)
-		if err != nil {
-			return Character{}, err
-		}
-
-		hitDieStep := int(math.Floor(float64(hitDieValue / 2)))
-		c.MaxHp = hitDieValue + hitDieStep * (c.Level - 1)
+	reference := referenceMap[c.Class]
+	referenceHitDieValue, err := parseHitDie(reference.HitDie)
+	if err != nil {
+		return Character{}, err
 	}
 
-	//left out c.CurrHp on purpose, must be filled during character creation or editing, since I'm reusing this func for both
-	c.Profs.Armor = referenceCharacter.Profs.Armor
-	c.Profs.Weapon = referenceCharacter.Profs.Weapon
-	c.Profs.Tools = referenceCharacter.Profs.Tools
-	c.Profs.Saving = referenceCharacter.Profs.Saving
-	c.ToolsChoice = referenceCharacter.ToolsChoice
-	c.SkillChoice.Cap = referenceCharacter.SkillChoice.Cap
-	c.SkillChoice.Possibilities = referenceCharacter.SkillChoice.Possibilities
-	c.Spells = referenceCharacter.Spells
-	//also left out AC and speed, which also should be filled following a race and equipment based validations
+	possibleConBonus := [11]int {-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5}
+	referenceHitDieStep := int(math.Ceil(float64(referenceHitDieValue / 2))) 
+	var referenceMaxHp int
+
+	if c.Level == 1 {
+		referenceMaxHp = referenceHitDieValue
+		if referenceMaxHp != c.MaxHp {
+			return Character{}, fmt.Errorf("character has invalid max hp value")
+		}
+	}
+	
+	areEqual := false
+
+	for i := 0; i < len(possibleConBonus); i++ {
+		referenceMaxHp = referenceHitDieValue + referenceHitDieStep * (c.Level - 1) + possibleConBonus[i] * (c.Level - 1)
+		if referenceMaxHp == c.MaxHp {
+			areEqual = true
+			break
+		} 
+	}
+	
+	if !areEqual {
+		return Character{}, fmt.Errorf("character has invalid max hp value")
+	}
+
+	c.CurrHp = referenceMaxHp
+	c.AC = 10 + calculateStatBonus(c.Stats.Dex)
+	c.Speed = 9.0
 
 	return c, nil
 }

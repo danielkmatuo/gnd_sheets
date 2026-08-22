@@ -55,31 +55,37 @@
             <div id="abilities">
                 <fieldset>
                     <legend>Choose your character ability scores</legend>
+                    <label for="str">Strengh</label>
                     <button id="less-str" type="button">-</button>
-                    <input id="str" type="text" placeholder="8"></input>
+                    <input id="str" name="str" type="text" value="8" placeholder="8" min="8" max="15"></input>
                     <button id="more-str" type="button">+</button>
                     
+                    <label for="dex">Dexterity</label>
                     <button id="less-dex" type="button">-</button>
-                    <input id="dex" type="text" placeholder="8"></input>
+                    <input id="dex" name="dex" type="text" value="8" placeholder="8" min="8" max="15"></input>
                     <button id="more-dex" type="button">+</button>
                     
+                    <label for="con">Constitution</label>
                     <button id="less-con" type="button">-</button>
-                    <input id="con" type="text" placeholder="8"></input>
+                    <input id="con" name="con" type="text" value="8" placeholder="8" min="8" max="15"></input>
                     <button id="more-con" type="button">+</button>
                     
+                    <label for="int">Intelligence</label>
                     <button id="less-int" type="button">-</button>
-                    <input id="int" type="text" placeholder="8"></input>
+                    <input id="int" name="int" type="text" value="8" placeholder="8" min="8" max="15"></input>
                     <button id="more-int" type="button">+</button>
                     
+                    <label for="wis">Wisdom</label>
                     <button id="less-wis" type="button">-</button>
-                    <input id="wis" type="text" placeholder="8"></input>
+                    <input id="wis" name="wis" type="text" value="8" placeholder="8" min="8" max="15"></input>
                     <button id="more-wis" type="button">+</button>
                     
+                    <label for="cha">Charisma</label>
                     <button id="less-cha" type="button">-</button>
-                    <input id="cha" type="text" placeholder="8"></input>
+                    <input id="cha" name="cha" type="text" value="8" placeholder="8" min="8" max="15"></input>
                     <button id="more-cha" type="button">+</button>
 
-                    <p id="curr-cost"></p>
+                    <p id="curr-cost">Current Cost: 0</p>
                 </fieldset>
             </div>
             <div>
