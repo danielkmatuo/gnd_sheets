@@ -3,6 +3,15 @@ const classInfo = document.querySelector("#class-info");
 const characterStats = document.querySelector("#abilities");
 const form = document.querySelector("#character-form");
 
+let lastValidScores = {
+    "str": 8,
+    "dex": 8,
+    "con": 8,
+    "int": 8,
+    "wis": 8,
+    "cha": 8
+}
+
 //make user able to only choose skills equal to the number of skills cap
 function quantitySkillsCheck (quantity, data) {
     const skillIssues = data.skill_choices.choose
@@ -44,16 +53,22 @@ function instantiateCostsMap() {
 function validateStatsSelection(scores, scoresCost) {
     const maxCost = 27;
     var cost = 0;
+    var isWithinRange = true;
 
     for (i = 0; i < scores.length; i++) {
+        if (!(scores[i] >= 8 && scores[i] <= 15)) {
+            isWithinRange = false; 
+            break
+        }
+
         cost += scoresCost.get(scores[i]);
     }
 
     if (cost > maxCost) {
-        return [false, cost];
+        return [false, cost, isWithinRange];
     }
 
-    return [true, cost];
+    return [true, cost, isWithinRange];
 }
 
 //changes data from index.html dynamically
@@ -123,8 +138,13 @@ classSelect.addEventListener("change", async function () {
     });
 });
 
-//validate character ability scores from frontend, then send the current cost to server for further validation
-characterStats.addEventListener("change", async function(){
+//validate character ability scores from frontend
+characterStats.addEventListener("change", async function(event){
+    if (event.target.value === "") {
+        event.target.value = lastValidScores[event.target.id];
+        return;
+    }
+
     const characterStr = Number(document.querySelector("#str").value);
     const characterDex = Number(document.querySelector("#dex").value);
     const characterCon = Number(document.querySelector("#con").value);
@@ -134,14 +154,23 @@ characterStats.addEventListener("change", async function(){
 
     const scores = [characterStr, characterDex, characterCon, characterInt, characterWis, characterCha];
     const costsMap = instantiateCostsMap();
-    var [costOk, currCost] = validateStatsSelection(scores, costsMap);
+    var [costOk, currCost, scoresRangeOk] = validateStatsSelection(scores, costsMap);
 
     if (!costOk) {
-        alert("your current score is above 27");
+        event.target.value = lastValidScores[event.target.id];
+        alert("your current ability score cost is above 27");
+        return;
     }
 
+    if (!scoresRangeOk) {
+        event.target.value = lastValidScores[event.target.id];
+        alert("one of your scores are not within the range (out of range 8 to 15)")
+        return;
+    }
+
+    lastValidScores[event.target.id] = Number(event.target.value);
     document.querySelector("#curr-cost").textContent = "Current cost: " + currCost;
-})
+});
 
 //send form information to the go server and do the first validation of data
 form.addEventListener("submit", async function(event) {
