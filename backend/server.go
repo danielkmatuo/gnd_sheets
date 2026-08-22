@@ -57,7 +57,7 @@ func viewPageHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "couldnt find root", http.StatusInternalServerError)
 	}
 
-	http.ServeFile(w, r, "../frontend/character.html")
+	http.ServeFile(w, r, filepath.Join(root, "frontend", "character.html"))
 }
 
 func configureServer() {

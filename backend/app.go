@@ -8,6 +8,8 @@ func Run() error {
 		return fmt.Errorf("couldnt find root dir")
 	}
 
+	fmt.Printf("root: %v\n", root)
+
     err := ensureChildDirsExist(root); 
 	if err != nil {
         return err

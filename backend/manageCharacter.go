@@ -244,7 +244,7 @@ func createCharacter(w http.ResponseWriter, r *http.Request) error {
 }
 
 func getAllCharacters(root string) ([]Character, error) {
-	files, err := os.ReadDir("../data/characters")
+	files, err := os.ReadDir(filepath.Join(root, "data", "characters"))
 	if err != nil {
 		return []Character{}, err
 	}
