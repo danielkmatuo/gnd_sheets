@@ -1,4 +1,4 @@
-package main
+package backend
 
 import (
 	"crypto/rand"
@@ -48,13 +48,18 @@ type NewCharacter struct {
 }
 
 func charactersHandler(w http.ResponseWriter, r *http.Request) {
-	characters, err := getAllCharacters()
+	root := findRootDir()
+	if root == "" {
+		http.Error(w, "couldnt find root", http.StatusInternalServerError)
+	}
+
+	characters, err := getAllCharacters(root)
 	if err != nil {
 		http.Error(w, "couldnt get all characters stored on data dir", http.StatusInternalServerError)
 		return
 	}
 	
-	tmpl, err := template.ParseFiles("../frontend/characters.html")
+	tmpl, err := template.ParseFiles(filepath.Join(root, "frontend", "characters.html"))
     if err != nil {
         http.Error(
             w,
@@ -97,7 +102,12 @@ func sendCharacterDataHandler(w http.ResponseWriter, r *http.Request) {
 func editCharacterDoneHandler(w http.ResponseWriter, r *http.Request) {
 	characterID := r.PathValue("id")
 
-	err := editCharacter(characterID)
+	root := findRootDir()
+	if root == "" {
+		http.Error(w, "couldnt find root", http.StatusInternalServerError)
+	}
+
+	err := editCharacter(characterID, root)
 	if err != nil {
 		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
 		return
@@ -109,8 +119,8 @@ func editCharacterDoneHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, currentURL, http.StatusFound)
 }
 
-func getRandomID() (string, error) {
-	dirFiles, err := os.ReadDir("../data/characters")
+func getRandomID(root string) (string, error) {
+	dirFiles, err := os.ReadDir(filepath.Join(root, "data", "characters"))
 	if err != nil {
 		return "", err
 	}
@@ -141,7 +151,12 @@ func getRandomID() (string, error) {
 }
 
 func sendCharacterData(w http.ResponseWriter, characterID string) error {
-	c, err := getCharacterByID(characterID)
+	root := findRootDir() 
+	if root == "" {
+		return fmt.Errorf("couldnt find root")
+	}
+
+	c, err := getCharacterByID(characterID, root)
 	if err != nil {
 		return err
 	}
@@ -175,8 +190,9 @@ func createCharacterJSON(c Character) ([]byte, error) {
 	return data, nil
 }
 
-func createJSON(data []byte, ID string) error {
-	fileName := filepath.Join("../data/characters", ID + ".json")
+func createJSON(data []byte, ID string, root string) error {
+	charactersPath := filepath.Join(root, "data", "characters")
+	fileName := filepath.Join(charactersPath, ID + ".json")
 
 	err := os.WriteFile(fileName, data, 0644)
 	if err != nil {
@@ -187,12 +203,17 @@ func createJSON(data []byte, ID string) error {
 }
 
 func createCharacter(w http.ResponseWriter, r *http.Request) error {
+	root := findRootDir()
+	if root == "" {
+		return fmt.Errorf("couldnt find root")
+	}
+
 	newC, err := getCharacterInfoCreation(r)
 	if err != nil {
 		return err
 	}
 
-	c, err := validateNewCharacter(newC)
+	c, err := validateNewCharacter(newC, root)
 	if err != nil {
 		return err
 	}
@@ -212,7 +233,7 @@ func createCharacter(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	
-	err = createJSON(data, validatedC.ID)
+	err = createJSON(data, validatedC.ID, root)
 	if err != nil {
 		return err
 	}
@@ -222,7 +243,7 @@ func createCharacter(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func getAllCharacters() ([]Character, error) {
+func getAllCharacters(root string) ([]Character, error) {
 	files, err := os.ReadDir("../data/characters")
 	if err != nil {
 		return []Character{}, err
@@ -231,7 +252,7 @@ func getAllCharacters() ([]Character, error) {
 	var filesNames []string
 
 	for _, file := range files {
-		filePath := filepath.Join("../data/characters", file.Name())
+		filePath := filepath.Join(filepath.Join(root, "data", "characters"), file.Name())
 		filesNames = append(filesNames, filePath)
 	}
 	
@@ -258,8 +279,8 @@ func getAllCharacters() ([]Character, error) {
 	return characters, nil
 }
 
-func getCharacterByID(characterID string) (Character, error) {
-	files, err := os.ReadDir("../data/characters")
+func getCharacterByID(characterID string, root string) (Character, error) {
+	files, err := os.ReadDir(filepath.Join(root, "data", "characters"))
 	if err != nil {
 		return Character{}, err
 	}
@@ -270,7 +291,7 @@ func getCharacterByID(characterID string) (Character, error) {
 	for _, file := range files {
 		if file.Name() == characterID + ".json" {
 			exists = true
-			filePath := filepath.Join("../data/characters", file.Name())
+			filePath := filepath.Join(filepath.Join(root, "data", "characters"), file.Name())
 			target = filePath
 			break
 		}
@@ -294,8 +315,8 @@ func getCharacterByID(characterID string) (Character, error) {
 	return c, nil
 }
 
-func editCharacter(characterID string) error {
-	c, err := getCharacterByID(characterID)
+func editCharacter(characterID string, root string) error {
+	c, err := getCharacterByID(characterID, root)
 	if err != nil {
 		return err
 	}
@@ -305,7 +326,7 @@ func editCharacter(characterID string) error {
 		return fmt.Errorf("error while encoding .json")
 	}
 
-	err = createJSON(data, characterID)
+	err = createJSON(data, characterID, root)
 	if err != nil {
 		return err
 	}

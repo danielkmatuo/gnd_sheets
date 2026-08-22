@@ -1,4 +1,4 @@
-package main
+package backend
 
 import (
 	"fmt"
@@ -49,10 +49,10 @@ func validateByClassReferenceData(c Character) (Character, error) {
 	return c, nil
 }
 
-func validateNewCharacter(newCharacter NewCharacter) (Character, error) {
+func validateNewCharacter(newCharacter NewCharacter, root string) (Character, error) {
 	c := Character{}
 
-	characterID, err := getRandomID()
+	characterID, err := getRandomID(root)
 	if err != nil {
 		return Character{}, err
 	}	

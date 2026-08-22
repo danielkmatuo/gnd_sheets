@@ -1,10 +1,11 @@
-package main
+package backend
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 type ToolChoice struct {
@@ -64,7 +65,12 @@ func classReferenceHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getReferenceData() (map[string]ClassInfo, error) {
-	classesData, err := os.ReadFile("../data/reference/classes.json")
+	root := findRootDir() 
+	if root == "" {
+		return map[string]ClassInfo{}, fmt.Errorf("couldnt find root")
+	}
+
+	classesData, err := os.ReadFile(filepath.Join(root, "data", "reference", "classes.json"))
 	if err != nil {
 		return map[string]ClassInfo{}, err
 	}

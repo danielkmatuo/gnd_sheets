@@ -1,27 +1,35 @@
-package main
+package backend
 
 import (
- "fmt"
- "os"
+	"fmt"
+	"os"
+	"path/filepath"
 )
 
-const (
-	characters = "../data/reference/classes.json"
-)
+func findRootDir() string {
+	exe, err := os.Executable()
+	if err != nil {
+		return ""
+	}
 
-func buildDataDir() error {
+	exePath := filepath.Dir(exe)
+	fmt.Printf("root: %v", exePath)
+	return exePath
+}
+
+func buildDataDir(root string) error {
 	fmt.Print("Creating new data dir...")
 
-	return os.MkdirAll("../data", 0755)
+	return os.MkdirAll(filepath.Join(root, "data"), 0755)
 }
 
-func buildCharactersDataDir() error {
+func buildCharactersDataDir(root string) error {
 	fmt.Print("Creating new characters data dir...")
-	return os.MkdirAll("../data/characters", 0755)
+	return os.MkdirAll(filepath.Join(root, "data", "characters"), 0755)
 }
 
-func ensureDataDirExist() error {
-	info, err := os.Stat("../data")
+func ensureDataDirExist(root string ) error {
+	info, err := os.Stat(filepath.Join(root, "data"))
 
 	if err == nil {
 		if !info.IsDir(){
@@ -35,7 +43,7 @@ func ensureDataDirExist() error {
 	if os.IsNotExist(err) {
 		fmt.Print("data dir doesn't exist, creating it...\n")
 
-		err = buildDataDir()
+		err = buildDataDir(root)
 		if err != nil {
 			return err
 		}
@@ -46,9 +54,9 @@ func ensureDataDirExist() error {
 	return err
 }
 
-func ensureEssentialFilesExist() error {
+func ensureEssentialFilesExist(root string) error {
     files := []string{
-        "../data/reference/classes.json",
+		filepath.Join(root, "data", "reference", "classes.json"),
     }
 
     for _, file := range files {
@@ -66,13 +74,13 @@ func ensureEssentialFilesExist() error {
     return nil
 }
 
-func ensureChildDirsExist() error {
-    err := ensureDataDirExist()
+func ensureChildDirsExist(root string) error {
+    err := ensureDataDirExist(root)
     if err != nil {
         return err
     }
 
-    info, err := os.Stat("../data/reference")
+    info, err := os.Stat(filepath.Join(root, "data", "reference"))
 
     if err == nil {
         if !info.IsDir() {
@@ -84,7 +92,7 @@ func ensureChildDirsExist() error {
         return err
     }
 
-    info, err = os.Stat("../data/characters")
+    info, err = os.Stat(filepath.Join(root, "data", "characters"))
 
     if err == nil {
         if !info.IsDir() {
@@ -98,7 +106,7 @@ func ensureChildDirsExist() error {
     if os.IsNotExist(err) {
         fmt.Print("data/characters/ dir doesn't exist, creating it...\n")
 
-        err = buildCharactersDataDir()
+        err = buildCharactersDataDir(root)
         if err != nil {
             return err
         }
