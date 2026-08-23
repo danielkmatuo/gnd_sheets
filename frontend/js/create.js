@@ -3,6 +3,15 @@ const classInfo = document.querySelector("#class-info");
 const characterStats = document.querySelector("#abilities");
 const form = document.querySelector("#character-form");
 
+let lastValidScoresLvlOne = {
+    "str": 8,
+    "dex": 8,
+    "con": 8,
+    "int": 8,
+    "wis": 8,
+    "cha": 8
+}
+
 let lastValidScores = {
     "str": 8,
     "dex": 8,
@@ -50,7 +59,7 @@ function instantiateCostsMap() {
     return scoresCosts;
 }
 
-function validateStatsSelection(scores, scoresCost) {
+function validateStatsSelectionLevelOne(scores, scoresCost) {
     const maxCost = 27;
     var cost = 0;
     var isWithinRange = true;
@@ -69,6 +78,16 @@ function validateStatsSelection(scores, scoresCost) {
     }
 
     return [true, cost, isWithinRange];
+}
+
+function validateStatsSelection(scores) {
+    for (let i = 0; i < scores.length; i++) {
+        if (!(scores[i] >= 1 && scores[i] <= 30)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 //changes data from index.html dynamically
@@ -138,38 +157,79 @@ classSelect.addEventListener("change", async function () {
     });
 });
 
-//validate character ability scores from frontend
-characterStats.addEventListener("change", async function(event){
-    if (event.target.value === "") {
-        event.target.value = lastValidScores[event.target.id];
+//validate character ability scores from frontend for new characters (lvl 1)
+form.addEventListener("change", async function(){
+    if (form.querySelector("#level").value === "1"){
+        characterStats.addEventListener("change", async function(event){
+            if (event.target.value === "") {
+                event.target.value = lastValidScoresLvlOne[event.target.id];
+                return;
+            }
+
+            const characterStr = Number(document.querySelector("#str").value);
+            const characterDex = Number(document.querySelector("#dex").value);
+            const characterCon = Number(document.querySelector("#con").value);
+            const characterInt = Number(document.querySelector("#int").value);
+            const characterWis = Number(document.querySelector("#wis").value);
+            const characterCha = Number(document.querySelector("#cha").value);
+
+            const scores = [characterStr, characterDex, characterCon, characterInt, characterWis, characterCha];
+            const costsMap = instantiateCostsMap();
+            var [costOk, currCost, scoresRangeOk] = validateStatsSelectionLevelOne(scores, costsMap);
+
+            if (!costOk) {
+                event.target.value = lastValidScoresLvlOne[event.target.id];
+                alert("your current ability score cost is above 27");
+                return;
+            }
+
+            if (!scoresRangeOk) {
+                event.target.value = lastValidScoresLvlOne[event.target.id];
+                alert("one of your scores are not within the range (out of range 8 to 15)")
+                return;
+            }
+
+            lastValidScoresLvlOne[event.target.id] = Number(event.target.value);
+            document.querySelector("#curr-cost").textContent = "Current cost: " + currCost;
+        });
+    }
+    else {
         return;
     }
+});
 
-    const characterStr = Number(document.querySelector("#str").value);
-    const characterDex = Number(document.querySelector("#dex").value);
-    const characterCon = Number(document.querySelector("#con").value);
-    const characterInt = Number(document.querySelector("#int").value);
-    const characterWis = Number(document.querySelector("#wis").value);
-    const characterCha = Number(document.querySelector("#cha").value);
+//validate ability scores for characters above lvl 1
+form.addEventListener("change", async function(){
+    if (form.querySelector("#level").value != "1"){
+        characterStats.addEventListener("change", async function(event){
+            if (event.target.value === "") {
+                event.target.value = lastValidScores[event.target.id];
+                return;
+            }
 
-    const scores = [characterStr, characterDex, characterCon, characterInt, characterWis, characterCha];
-    const costsMap = instantiateCostsMap();
-    var [costOk, currCost, scoresRangeOk] = validateStatsSelection(scores, costsMap);
+            const characterStr = Number(document.querySelector("#str").value);
+            const characterDex = Number(document.querySelector("#dex").value);
+            const characterCon = Number(document.querySelector("#con").value);
+            const characterInt = Number(document.querySelector("#int").value);
+            const characterWis = Number(document.querySelector("#wis").value);
+            const characterCha = Number(document.querySelector("#cha").value);
 
-    if (!costOk) {
-        event.target.value = lastValidScores[event.target.id];
-        alert("your current ability score cost is above 27");
+            const scores = [characterStr, characterDex, characterCon, characterInt, characterWis, characterCha];
+            const scoresRangeOk = validateStatsSelection(scores);
+
+            if (!scoresRangeOk) {
+                event.target.value = lastValidScores[event.target.id];
+                alert("one of your scores are not within the range (out of range 1 to 30)")
+                return;
+            }
+
+            lastValidScores[event.target.id] = Number(event.target.value);
+            characterStats.querySelector("#curr-cost").textContent = "";
+        });
+    }
+    else {
         return;
     }
-
-    if (!scoresRangeOk) {
-        event.target.value = lastValidScores[event.target.id];
-        alert("one of your scores are not within the range (out of range 8 to 15)")
-        return;
-    }
-
-    lastValidScores[event.target.id] = Number(event.target.value);
-    document.querySelector("#curr-cost").textContent = "Current cost: " + currCost;
 });
 
 //send form information to the go server and do the first validation of data
