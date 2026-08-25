@@ -16,7 +16,7 @@ func validateByClassReferenceData(c Character) (Character, error) {
 	referenceCharacter := classInfoMap[c.Class]
 	
 	if len(c.SkillChoice.Chosen) != referenceCharacter.SkillChoice.Cap {
-		return Character{}, fmt.Errorf("character must have exact %d", referenceCharacter.SkillChoice.Cap)
+		return Character{}, fmt.Errorf("character must have exact %d skills", referenceCharacter.SkillChoice.Cap)
 	} 
 
 	if c.Level == 1 {
@@ -31,8 +31,8 @@ func validateByClassReferenceData(c Character) (Character, error) {
 		}
 
 		conBonus := calculateStatBonus(c.Stats.Con)
-		hitDieStep := int(math.Ceil(float64(hitDieValue / 2)))
-		c.MaxHp = hitDieValue + hitDieStep * (c.Level - 1) + conBonus * (c.Level - 1)
+		hitDieStep := int(math.Ceil(float64(hitDieValue / 2))) //unnecessary math, but worth keeping explict for now
+		c.MaxHp = hitDieValue + hitDieStep * (c.Level - 1) + conBonus * (c.Level)
 	}
 
 	//left out c.CurrHp on purpose, must be filled during character creation or editing, since I'm reusing this func for both
@@ -73,37 +73,9 @@ func validateNewCharacter(newCharacter NewCharacter, root string) (Character, er
 		return Character{}, fmt.Errorf("invalid level: must be within 1 to 20 range")
 	}
 
-	if newCharacter.Stats.Str < 8 || newCharacter.Stats.Str > 15 {
-		return Character{}, fmt.Errorf("invalid STR: must be within 8 to 15 range")
-	}
-	
-	if newCharacter.Stats.Dex < 8 || newCharacter.Stats.Dex > 15 {
-		return Character{}, fmt.Errorf("invalid DEX: must be within 8 to 15 range")
-	}
-	
-	if newCharacter.Stats.Con < 8 || newCharacter.Stats.Con > 15 {
-		return Character{}, fmt.Errorf("invalid CON: must be within 8 to 15 range")
-	}
-	
-	if newCharacter.Stats.Int < 8 || newCharacter.Stats.Int > 15 {
-		return Character{}, fmt.Errorf("invalid INT: must be within 8 to 15 range")
-	}
-	
-	if newCharacter.Stats.Wis < 8 || newCharacter.Stats.Wis > 15 {
-		return Character{}, fmt.Errorf("invalid WIS: must be within 8 to 15 range")
-	}
-	
-	if newCharacter.Stats.Cha < 8 || newCharacter.Stats.Cha > 15 {
-		return Character{}, fmt.Errorf("invalid CHA: must be within 8 to 15 range")
-	}
-
-	if newCharacter.Skills == nil {
-		return Character{}, fmt.Errorf("cannot choose 0 skills")
-	}
-
-	abilityCostOk := validateAbilityCost(newCharacter.Stats)	
-	if !abilityCostOk {
-		return c, fmt.Errorf("ability cost cannot be negative neither above 27")
+	statsValid, err := validateCharacterAbilityScores(newCharacter)
+	if !statsValid {
+		return Character{}, err
 	}
 
 	c.ID = characterID
@@ -114,7 +86,17 @@ func validateNewCharacter(newCharacter NewCharacter, root string) (Character, er
 	c.SkillChoice.Chosen = newCharacter.Skills
 	c.Stats = newCharacter.Stats
 
-	return c, nil
+	validatedByReference, err := validateByClassReferenceData(c)
+	if err != nil {
+		return Character{}, err
+	}
+	
+	dynamicallyCalculated, err := calculateDynamicallyNewCharacter(validatedByReference)
+	if err != nil {
+		return Character{}, err
+	}
+
+	return dynamicallyCalculated, nil
 }
 
 func validateExistingCharacter(c Character) (Character, error){
@@ -207,7 +189,7 @@ func validateAbilityCost(stats Attributes) bool {
 }
 
 func calculateStatBonus(stat int) int {
-	baselineStatValue := 10
+	const baselineStatValue int = 10
 	var bonus int
 
 	if stat % 2 == 0 {
@@ -238,6 +220,112 @@ func calculateStatBonus(stat int) int {
 	return bonus
 }
 
+func validateCharacterAbilityScores(c NewCharacter) (bool, error) {
+	if c.Level == 1 {
+		costOk := validateAbilityCost(c.Stats)	
+
+		if !costOk{
+			return false, fmt.Errorf("Ability scores must obey the cost rule for lvl 1 character")
+		} else if c.Stats.Str < 8 || c.Stats.Str > 15 {
+			return false, fmt.Errorf("Stat for lvl 1 character must be within range 8 to 15")	
+		} else if c.Stats.Dex < 8 || c.Stats.Dex > 15 {
+			return false, fmt.Errorf("Stat for lvl 1 character must be within range 8 to 15")	
+		} else if c.Stats.Con < 8 || c.Stats.Con > 15 {
+			return false, fmt.Errorf("Stat for lvl 1 character must be within range 8 to 15")	
+		} else if c.Stats.Int < 8 || c.Stats.Int > 15 {
+			return false, fmt.Errorf("Stat for lvl 1 character must be within range 8 to 15")	
+		} else if c.Stats.Wis < 8 || c.Stats.Wis > 15 {
+			return false, fmt.Errorf("Stat for lvl 1 character must be within range 8 to 15")	
+		} else if c.Stats.Cha < 8 || c.Stats.Cha > 15 {
+			return false, fmt.Errorf("Stat for lvl 1 character must be within range 8 to 15")	
+		} else {
+			return true, nil
+		}
+	}
+
+	currState := [6]int{8, 8, 8, 8, 8, 8}	
+	statsCap := [6]int{
+		c.Stats.Str, 
+		c.Stats.Dex, 
+		c.Stats.Con, 
+		c.Stats.Int, 
+		c.Stats.Wis, 
+		c.Stats.Cha,
+	}
+
+	costMap := map[int]int{
+		8: 0,
+		9: 1,
+		10: 2,
+		11: 3,
+		12: 4,
+		13: 5,
+		14: 7,
+		15: 9,
+		16: 1,
+		17: 2,
+		18: 3,
+		19: 4,
+		20: 5,
+	}
+
+	costCap := 27 + defineExtraCostCap(c.Level)
+	positiveDiff := [6]int{0, 0, 0, 0, 0, 0}
+	
+	for {
+		currCost := 0
+		for i, stat := range statsCap {
+			statDiff := (currState[i] + 5) - stat
+			if statDiff > 0 {
+				positiveDiff[i] = statDiff
+			} else if statDiff < 0 {
+				currState[i] += stepUp(currState[i], stat)	
+				currCost += costMap[currState[i]]
+			} else {
+				if currState[i] != stat {
+					currState[i] += 5
+				}
+				positiveDiff[i] = 0
+				currCost += costMap[currState[i]]
+			}
+		}	
+
+		for i, diff := range positiveDiff {
+			if diff > 0 {
+				currState[i] += stepUp(currState[i], statsCap[i])	
+				currCost += costMap[currState[i]]
+			}	
+		}
+			
+		if currCost > costCap {
+			return false, fmt.Errorf("Current ability scores arent valid")
+		} else if currState == statsCap {
+			break
+		}
+	}
+
+	return true, nil
+}
+
+func stepUp(score int, statCap int) int {
+	if score < statCap {
+		return 1
+	}	
+
+	return 0
+}
+
+func defineExtraCostCap(level int) int {
+	extraCost := 3
+	for i := range level {
+		if i % 4 == 0 {
+			extraCost += 2
+		}
+	}
+
+	return extraCost
+}
+
 func calculateDynamicallyNewCharacter(c Character) (Character, error) {
 	referenceMap, err := getReferenceData()
 	if err != nil {
@@ -250,12 +338,12 @@ func calculateDynamicallyNewCharacter(c Character) (Character, error) {
 		return Character{}, err
 	}
 
-	possibleConBonus := [11]int {-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5}
-	referenceHitDieStep := int(math.Ceil(float64(referenceHitDieValue / 2))) 
+	conBonus := calculateStatBonus(c.Stats.Con)
+	referenceHitDieStep := int(math.Ceil(float64(referenceHitDieValue / 2))) //clearly unnecessary math, but still worth keeping for now 
 	var referenceMaxHp int
 
 	if c.Level == 1 {
-		referenceMaxHp = referenceHitDieValue
+		referenceMaxHp = referenceHitDieValue + conBonus
 		if referenceMaxHp != c.MaxHp {
 			return Character{}, fmt.Errorf("character has invalid max hp value")
 		}
@@ -263,13 +351,10 @@ func calculateDynamicallyNewCharacter(c Character) (Character, error) {
 	
 	areEqual := false
 
-	for i := 0; i < len(possibleConBonus); i++ {
-		referenceMaxHp = referenceHitDieValue + referenceHitDieStep * (c.Level - 1) + possibleConBonus[i] * (c.Level - 1)
-		if referenceMaxHp == c.MaxHp {
-			areEqual = true
-			break
-		} 
-	}
+	referenceMaxHp = referenceHitDieValue + referenceHitDieStep * (c.Level - 1) + conBonus * (c.Level)
+	if referenceMaxHp == c.MaxHp {
+		areEqual = true
+	} 
 	
 	if !areEqual {
 		return Character{}, fmt.Errorf("character has invalid max hp value")

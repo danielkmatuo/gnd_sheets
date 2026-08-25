@@ -2,15 +2,7 @@ const classSelect = document.querySelector("#class");
 const classInfo = document.querySelector("#class-info");
 const characterStats = document.querySelector("#abilities");
 const form = document.querySelector("#character-form");
-
-let lastValidScoresLvlOne = {
-    "str": 8,
-    "dex": 8,
-    "con": 8,
-    "int": 8,
-    "wis": 8,
-    "cha": 8
-}
+const levelSelect = document.querySelector("#level");
 
 let lastValidScores = {
     "str": 8,
@@ -19,29 +11,29 @@ let lastValidScores = {
     "int": 8,
     "wis": 8,
     "cha": 8
-}
+};
 
 //make user able to only choose skills equal to the number of skills cap
 function quantitySkillsCheck (quantity, data) {
-    const skillIssues = data.skill_choices.choose
+    const skillIssues = data.skill_choices.choose;
     if (quantity > skillIssues) {
-        return false
+        return false;
     }
 
-    return true
+    return true;
 }
 
 async function getClassInfoFromReference (selectedClass) {
     const response = await fetch(
         `/reference/classes/${selectedClass}`
-    )
+    );
 
     if (!response.ok) {
-        classInfo.textContent = "could not load class informataion from server."
-        return
+        classInfo.textContent = "could not load class informataion from server.";
+        return;
     }
 
-    return response
+    return response;
 }
 
 function instantiateCostsMap() {
@@ -59,28 +51,40 @@ function instantiateCostsMap() {
     return scoresCosts;
 }
 
-function validateStatsSelectionLevelOne(scores, scoresCost) {
-    const maxCost = 27;
-    var cost = 0;
-    var isWithinRange = true;
+function validateStatsSelection(scores, scoresCost) {
+    const currLevel = Number(levelSelect.value);
+    if (currLevel === 1) {
+        const maxCost = 27;
+        var cost = 0;
+        var isWithinRange = true;
 
-    for (i = 0; i < scores.length; i++) {
-        if (!(scores[i] >= 8 && scores[i] <= 15)) {
-            isWithinRange = false; 
-            break
+        for (i = 0; i < scores.length; i++) {
+            if (!(scores[i] >= 8 && scores[i] <= 15)) {
+                isWithinRange = false; 
+                return [true, cost, isWithinRange];
+            }
+
+            cost += scoresCost.get(scores[i]);
         }
 
-        cost += scoresCost.get(scores[i]);
-    }
+        if (cost > maxCost) {
+            return [false, cost, isWithinRange];
+        }
 
-    if (cost > maxCost) {
-        return [false, cost, isWithinRange];
+        return [true, cost, isWithinRange];
     }
+    else {
+        const isValid = validateStatsSelectionAboveLvlOne(scores);
 
-    return [true, cost, isWithinRange];
+        if (!isValid) {
+            return [false, 0, isValid];
+        }
+
+        return [false, 0, isValid];
+    }
 }
 
-function validateStatsSelection(scores) {
+function validateStatsSelectionAboveLvlOne(scores) {
     for (let i = 0; i < scores.length; i++) {
         if (!(scores[i] >= 1 && scores[i] <= 30)) {
             return false;
@@ -157,77 +161,50 @@ classSelect.addEventListener("change", async function () {
     });
 });
 
-//validate character ability scores from frontend for new characters (lvl 1)
-form.addEventListener("change", async function(){
-    if (form.querySelector("#level").value === "1"){
-        characterStats.addEventListener("change", async function(event){
-            if (event.target.value === "") {
-                event.target.value = lastValidScoresLvlOne[event.target.id];
-                return;
-            }
-
-            const characterStr = Number(document.querySelector("#str").value);
-            const characterDex = Number(document.querySelector("#dex").value);
-            const characterCon = Number(document.querySelector("#con").value);
-            const characterInt = Number(document.querySelector("#int").value);
-            const characterWis = Number(document.querySelector("#wis").value);
-            const characterCha = Number(document.querySelector("#cha").value);
-
-            const scores = [characterStr, characterDex, characterCon, characterInt, characterWis, characterCha];
-            const costsMap = instantiateCostsMap();
-            var [costOk, currCost, scoresRangeOk] = validateStatsSelectionLevelOne(scores, costsMap);
-
-            if (!costOk) {
-                event.target.value = lastValidScoresLvlOne[event.target.id];
-                alert("your current ability score cost is above 27");
-                return;
-            }
-
-            if (!scoresRangeOk) {
-                event.target.value = lastValidScoresLvlOne[event.target.id];
-                alert("one of your scores are not within the range (out of range 8 to 15)")
-                return;
-            }
-
-            lastValidScoresLvlOne[event.target.id] = Number(event.target.value);
-            document.querySelector("#curr-cost").textContent = "Current cost: " + currCost;
-        });
-    }
-    else {
+//validate character ability scores from frontend
+characterStats.addEventListener("change", async function(event){
+    if (event.target.value === "") {
+        event.target.value = lastValidScores[event.target.id];
         return;
     }
-});
 
-//validate ability scores for characters above lvl 1
-form.addEventListener("change", async function(){
-    if (form.querySelector("#level").value != "1"){
-        characterStats.addEventListener("change", async function(event){
-            if (event.target.value === "") {
-                event.target.value = lastValidScores[event.target.id];
-                return;
-            }
+    const characterStr = Number(document.querySelector("#str").value);
+    const characterDex = Number(document.querySelector("#dex").value);
+    const characterCon = Number(document.querySelector("#con").value);
+    const characterInt = Number(document.querySelector("#int").value);
+    const characterWis = Number(document.querySelector("#wis").value);
+    const characterCha = Number(document.querySelector("#cha").value);
+    const characterLvl = Number(form.querySelector("#level").value);
 
-            const characterStr = Number(document.querySelector("#str").value);
-            const characterDex = Number(document.querySelector("#dex").value);
-            const characterCon = Number(document.querySelector("#con").value);
-            const characterInt = Number(document.querySelector("#int").value);
-            const characterWis = Number(document.querySelector("#wis").value);
-            const characterCha = Number(document.querySelector("#cha").value);
+    const scores = [characterStr, characterDex, characterCon, characterInt, characterWis, characterCha];
+    const costsMap = instantiateCostsMap();
+    
+    const [costOk, cost, isWithinRange] = validateStatsSelection(scores, costsMap)
 
-            const scores = [characterStr, characterDex, characterCon, characterInt, characterWis, characterCha];
-            const scoresRangeOk = validateStatsSelection(scores);
-
-            if (!scoresRangeOk) {
-                event.target.value = lastValidScores[event.target.id];
-                alert("one of your scores are not within the range (out of range 1 to 30)")
-                return;
-            }
-
-            lastValidScores[event.target.id] = Number(event.target.value);
-            characterStats.querySelector("#curr-cost").textContent = "";
-        });
+    if (costOk && !isWithinRange) {
+        alert(`Your current score (${event.target.value}) is out of range (range must be within 8 to 15).`);
+        return;
+    } 
+    else if ((!costOk && cost != 0) && isWithinRange) {
+        alert(`Your current cost (${cost}) is above 27.`);
+        return;
+    }
+    else if ((!costOk && cost === 0) && !isWithinRange) {
+        alert(`Your current score(${event.target.value}) is out of range (range must be within 1 to 30).`)
+        return;
+    }
+    else if ((!costOk && cost === 0) && isWithinRange) {
+        lastValidScores[event.target.id] = Number(event.target.value);
+        document.querySelector("#curr-cost").textContent = "Current cost: not applicable for characters above level 1.";
+        return;
+    }
+    else if (costOk && isWithinRange) {
+        lastValidScores[event.target.id] = Number(event.target.value);
+        document.querySelector("#curr-cost").textContent = "Current cost: " + cost;
+        return;
     }
     else {
+        alert("Something unexpected happened...")
         return;
     }
 });
@@ -266,7 +243,8 @@ form.addEventListener("submit", async function(event) {
     });
 
     if (!response.ok) {
-        console.error("Could not create character");
+        const errorMessage = await response.text();
+        console.error("Go server error:", errorMessage);
         return;
     }
 

@@ -79,7 +79,7 @@ func charactersHandler(w http.ResponseWriter, r *http.Request) {
 func createCharacterHandler(w http.ResponseWriter, r *http.Request) {
 	err := createCharacter(w, r)
 	if err != nil {
-		http.Error(w, "Failed to create a new character", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
 		return
 	}
 }
@@ -218,22 +218,12 @@ func createCharacter(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	validatedC, err := validateByClassReferenceData(c)
-	if err != nil {
-		return err
-	}
-
-	validatedC, err = calculateDynamicallyNewCharacter(validatedC)
-	if err != nil {
-		return err
-	}
-
-	data, err := createCharacterJSON(validatedC)
+	data, err := createCharacterJSON(c)
 	if err != nil {
 		return err
 	}
 	
-	err = createJSON(data, validatedC.ID, root)
+	err = createJSON(data, c.ID, root)
 	if err != nil {
 		return err
 	}
