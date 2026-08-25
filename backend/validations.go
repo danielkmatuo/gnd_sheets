@@ -167,7 +167,18 @@ func parseHitDie(value string) (int, error) {
 }
 
 func validateAbilityCost(stats Attributes) bool {
+	currCost := calculateMinCost(stats)
+
+	if currCost > 27 || currCost < 0 {
+		return false
+	}
+
+	return true
+}
+
+func calculateMinCost(stats Attributes) int {
 	statsValues := [6]int{stats.Str, stats.Dex, stats.Con, stats.Int, stats.Wis, stats.Cha}
+
 	costMap := make(map[int]int)
 	allowedStatsValues := [8]int{8, 9, 10, 11, 12, 13, 14, 15}
 	allowedCostsValues := [8]int{0, 1, 2, 3, 4, 5, 7, 9}
@@ -182,11 +193,7 @@ func validateAbilityCost(stats Attributes) bool {
 		currCost += costMap[value]	
 	}
 
-	if currCost > 27 || currCost < 0 {
-		return false
-	}
-
-	return true
+	return currCost
 }
 
 func calculateStatBonus(stat int) int {
@@ -221,6 +228,7 @@ func calculateStatBonus(stat int) int {
 	return bonus
 }
 
+//TODO: create a new way to check how ability is validated rather than relying on costCap values
 func validateCharacterAbilityScores(c NewCharacter) (bool, error) {
 	if c.Level == 1 {
 		costOk := validateAbilityCost(c.Stats)	
@@ -270,7 +278,8 @@ func validateCharacterAbilityScores(c NewCharacter) (bool, error) {
 		20: 5,
 	}
 
-	costCap := 27 + defineExtraCostCap(c.Level)
+	minCost := calculateMinCost(c.Stats)
+	costCap := minCost + defineExtraCostCap(c.Level)
 	positiveDiff := [6]int{0, 0, 0, 0, 0, 0}
 	
 	for {
@@ -319,7 +328,7 @@ func stepUp(score int, statCap int) int {
 func defineExtraCostCap(level int) int {
 	extraCost := 3
 	for i := range level {
-		if i % 4 == 0 {
+		if (i + 1) % 4 == 0 {
 			extraCost += 2
 		}
 	}
