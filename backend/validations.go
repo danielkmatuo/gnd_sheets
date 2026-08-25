@@ -21,6 +21,7 @@ func validateByClassReferenceData(c Character) (Character, error) {
 
 	if c.Level == 1 {
 		c.MaxHp, err = parseHitDie(referenceCharacter.HitDie)
+		c.MaxHp = c.MaxHp + calculateStatBonus(c.Stats.Con)
 		if err != nil {
 			return Character{}, err
 		}
@@ -31,7 +32,7 @@ func validateByClassReferenceData(c Character) (Character, error) {
 		}
 
 		conBonus := calculateStatBonus(c.Stats.Con)
-		hitDieStep := int(math.Ceil(float64(hitDieValue / 2))) //unnecessary math, but worth keeping explict for now
+		hitDieStep := int(math.Ceil(float64(hitDieValue / 2))) + 1 //unnecessary math, but worth keeping explict for now
 		c.MaxHp = hitDieValue + hitDieStep * (c.Level - 1) + conBonus * (c.Level)
 	}
 
@@ -298,7 +299,7 @@ func validateCharacterAbilityScores(c NewCharacter) (bool, error) {
 		}
 			
 		if currCost > costCap {
-			return false, fmt.Errorf("Current ability scores arent valid")
+			return false, fmt.Errorf("Current ability scores arent valid: %d > %d", currCost, costCap)
 		} else if currState == statsCap {
 			break
 		}
@@ -339,7 +340,7 @@ func calculateDynamicallyNewCharacter(c Character) (Character, error) {
 	}
 
 	conBonus := calculateStatBonus(c.Stats.Con)
-	referenceHitDieStep := int(math.Ceil(float64(referenceHitDieValue / 2))) //clearly unnecessary math, but still worth keeping for now 
+	referenceHitDieStep := int(math.Ceil(float64(referenceHitDieValue / 2))) + 1 //clearly unnecessary math, but still worth keeping for now 
 	var referenceMaxHp int
 
 	if c.Level == 1 {
