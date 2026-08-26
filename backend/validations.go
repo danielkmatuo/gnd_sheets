@@ -167,7 +167,8 @@ func parseHitDie(value string) (int, error) {
 }
 
 func validateAbilityCost(stats Attributes) bool {
-	currCost := calculateMinCost(stats)
+	statsValues := [6]int{stats.Str, stats.Dex, stats.Con, stats.Int, stats.Wis, stats.Cha}
+	currCost := calculateCurrCost(statsValues)
 
 	if currCost > 27 || currCost < 0 {
 		return false
@@ -176,9 +177,7 @@ func validateAbilityCost(stats Attributes) bool {
 	return true
 }
 
-func calculateMinCost(stats Attributes) int {
-	statsValues := [6]int{stats.Str, stats.Dex, stats.Con, stats.Int, stats.Wis, stats.Cha}
-
+func calculateCurrCost(stats [6]int) int {
 	costMap := make(map[int]int)
 	allowedStatsValues := [8]int{8, 9, 10, 11, 12, 13, 14, 15}
 	allowedCostsValues := [8]int{0, 1, 2, 3, 4, 5, 7, 9}
@@ -189,8 +188,12 @@ func calculateMinCost(stats Attributes) int {
 
 	currCost := 0
 
-	for _, value := range statsValues {
-		currCost += costMap[value]	
+	for _, value := range stats {
+		if value >= 8 && value <= 15 {
+			currCost += costMap[value]	
+		} else {
+			return -1
+		}
 	}
 
 	return currCost
@@ -228,31 +231,91 @@ func calculateStatBonus(stat int) int {
 	return bonus
 }
 
-//TODO: create a new way to check how ability is validated rather than relying on costCap values
-func validateCharacterAbilityScores(c NewCharacter) (bool, error) {
-	if c.Level == 1 {
-		costOk := validateAbilityCost(c.Stats)	
+func createAnchor(stats Attributes) ([6]int, [6]int) {
+	finalState := [6]int{stats.Str, stats.Dex, stats.Con, stats.Int, stats.Wis, stats.Cha}
 
-		if !costOk{
-			return false, fmt.Errorf("Ability scores must obey the cost rule for lvl 1 character")
-		} else if c.Stats.Str < 8 || c.Stats.Str > 15 {
-			return false, fmt.Errorf("Stat for lvl 1 character must be within range 8 to 15")	
-		} else if c.Stats.Dex < 8 || c.Stats.Dex > 15 {
-			return false, fmt.Errorf("Stat for lvl 1 character must be within range 8 to 15")	
-		} else if c.Stats.Con < 8 || c.Stats.Con > 15 {
-			return false, fmt.Errorf("Stat for lvl 1 character must be within range 8 to 15")	
-		} else if c.Stats.Int < 8 || c.Stats.Int > 15 {
-			return false, fmt.Errorf("Stat for lvl 1 character must be within range 8 to 15")	
-		} else if c.Stats.Wis < 8 || c.Stats.Wis > 15 {
-			return false, fmt.Errorf("Stat for lvl 1 character must be within range 8 to 15")	
-		} else if c.Stats.Cha < 8 || c.Stats.Cha > 15 {
-			return false, fmt.Errorf("Stat for lvl 1 character must be within range 8 to 15")	
+	var absDiffVec [6]int
+	var anchor [6]int
+
+	for i, stat := range finalState {
+		absDiffVec[i] = stat - 8	
+		if absDiffVec[i] < 5 {
+			anchor[i] = stat
 		} else {
-			return true, nil
+			anchor[i] = 13
 		}
 	}
 
-	currState := [6]int{8, 8, 8, 8, 8, 8}	
+	currCost := calculateCurrCost(anchor)
+	if currCost > 27 {
+		anchor[0] = 12
+		anchor[1] = 12
+		anchor[2] = 12
+	} else if currCost < 0 {
+		return [6]int{-1}, [6]int{-1}
+	}
+
+	return anchor, absDiffVec
+}
+
+func getStatesDiff(currState [6]int, finalState [6]int) [6]int {
+	var currDiffVec [6]int
+	for i, statCap := range finalState {
+		currDiffVec[i] = currState[i] - statCap
+	}
+
+	return currDiffVec
+}
+
+func validateRangeCharacterAbilityScores(level int, c NewCharacter) bool {
+	if level > 1 {
+		if c.Stats.Str < 8 || c.Stats.Str > 20 {
+			return false
+		} else if c.Stats.Dex < 8 || c.Stats.Dex > 20 {
+			return false
+		} else if c.Stats.Con < 8 || c.Stats.Con > 20 {
+			return false
+		} else if c.Stats.Int < 8 || c.Stats.Int > 20 {
+			return false
+		} else if c.Stats.Wis < 8 || c.Stats.Wis > 20 {
+			return false
+		} else if c.Stats.Cha < 8 || c.Stats.Cha > 20 {
+			return false
+		} 
+	}
+
+	costOk := validateAbilityCost(c.Stats)
+	if !costOk {
+		return false
+	} else if c.Stats.Str < 8 || c.Stats.Str > 15 {
+		return false
+	} else if c.Stats.Dex < 8 || c.Stats.Dex > 15 {
+		return false
+	} else if c.Stats.Con < 8 || c.Stats.Con > 15 {
+		return false
+	} else if c.Stats.Int < 8 || c.Stats.Int > 15 {
+		return false
+	} else if c.Stats.Wis < 8 || c.Stats.Wis > 15 {
+		return false
+	} else if c.Stats.Cha < 8 || c.Stats.Cha > 15 {
+		return false
+	}
+	
+	return true
+}
+
+func validateCharacterAbilityScores(c NewCharacter) (bool, error) {
+	validateRangeAndCost := validateRangeCharacterAbilityScores(c.Level, c)
+	if !validateRangeAndCost {
+		return false, fmt.Errorf("Character doesnt follow character creation level rules or doesnt follow cost buy rules")
+	}
+
+	var currState [6]int
+	anchor, absDiffVec := createAnchor(c.Stats)
+	if anchor[0] < 0 {
+		return false, fmt.Errorf("Invalid value for stat in the cost buy rules")
+	}
+	bonusPoints := defineBonusPoints(c.Level)
 	statsCap := [6]int{
 		c.Stats.Str, 
 		c.Stats.Dex, 
@@ -262,70 +325,60 @@ func validateCharacterAbilityScores(c NewCharacter) (bool, error) {
 		c.Stats.Cha,
 	}
 
-	costMap := map[int]int{
-		8: 0,
-		9: 1,
-		10: 2,
-		11: 3,
-		12: 4,
-		13: 5,
-		14: 7,
-		15: 9,
-		16: 1,
-		17: 2,
-		18: 3,
-		19: 4,
-		20: 5,
-	}
-
-	minCost := calculateMinCost(c.Stats)
-	costCap := minCost + defineExtraCostCap(c.Level)
-	positiveDiff := [6]int{0, 0, 0, 0, 0, 0}
-	
 	for {
-		currCost := 0
-		for i, stat := range statsCap {
-			statDiff := (currState[i] + 5) - stat
-			if statDiff > 0 {
-				positiveDiff[i] = statDiff
-			} else if statDiff < 0 {
-				currState[i] += stepUp(currState[i], stat)	
-				currCost += costMap[currState[i]]
-			} else {
-				if currState[i] != stat {
-					currState[i] += 5
-				}
-				positiveDiff[i] = 0
-				currCost += costMap[currState[i]]
-			}
-		}	
+		currCost := calculateCurrCost(anchor)
+		currState = anchor
+		currDiffVec := getStatesDiff(currState, statsCap)
+		currDiffSum := 0
 
-		for i, diff := range positiveDiff {
-			if diff > 0 {
-				currState[i] += stepUp(currState[i], statsCap[i])	
-				currCost += costMap[currState[i]]
-			}	
-		}
-			
-		if currCost > costCap {
-			return false, fmt.Errorf("Current ability scores arent valid: %d > %d", currCost, costCap)
-		} else if currState == statsCap {
+		for _, diff := range currDiffVec {
+			currDiffSum += diff	
+		} 
+
+		if currCost > 27 || currCost < 0 {
+			return false, fmt.Errorf("Character has invalid attributes values")
+		} else if currCost <= 27 && currDiffSum == bonusPoints {
 			break
 		}
+
+		minAbsDiff := 100
+		pointer := 0
+		for i, diff := range currDiffVec {
+			if diff <= minAbsDiff && diff > 0 {
+				minAbsDiff = diff
+				pointer = i
+			}
+		}
+
+		anchor[pointer]++
+		absDiffVec[pointer]--
 	}
 
-	return true, nil
+	currState = anchor
+	bonusPointsDiff := getStatesDiff(currState, statsCap) 
+
+	const maxIterations int = 100
+
+	for i := 0; i < maxIterations; i++ {
+		if currState == statsCap {
+			return true, nil
+		}	
+
+		for i, diff := range bonusPointsDiff {
+			if diff > 0 && bonusPoints > 0{
+				bonusPointsDiff[i]--
+				bonusPoints--
+				currState[i]++
+			} else if diff > 0 && bonusPoints <= 0 {
+				return false, fmt.Errorf("Character has invalid stats, given that absDiffVec still has non zero values but ran out of bonus points")
+			}
+		}
+	}
+
+	return false, fmt.Errorf("Character has invalid stats, even after achieving max iterations cap")
 }
 
-func stepUp(score int, statCap int) int {
-	if score < statCap {
-		return 1
-	}	
-
-	return 0
-}
-
-func defineExtraCostCap(level int) int {
+func defineBonusPoints(level int) int {
 	extraCost := 3
 	for i := range level {
 		if (i + 1) % 4 == 0 {
