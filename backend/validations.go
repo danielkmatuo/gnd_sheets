@@ -231,7 +231,7 @@ func calculateStatBonus(stat int) int {
 	return bonus
 }
 
-func createAnchor(stats Attributes) ([6]int, [6]int) {
+func createAnchor(stats Attributes) [6]int {
 	finalState := [6]int{stats.Str, stats.Dex, stats.Con, stats.Int, stats.Wis, stats.Cha}
 
 	var absDiffVec [6]int
@@ -252,10 +252,10 @@ func createAnchor(stats Attributes) ([6]int, [6]int) {
 		anchor[1] = 12
 		anchor[2] = 12
 	} else if currCost < 0 {
-		return [6]int{-1}, [6]int{-1}
+		return [6]int{-1}
 	}
 
-	return anchor, absDiffVec
+	return anchor
 }
 
 func getStatesDiff(currState [6]int, finalState [6]int) [6]int {
@@ -311,7 +311,7 @@ func validateCharacterAbilityScores(c NewCharacter) (bool, error) {
 	}
 
 	var currState [6]int
-	anchor, absDiffVec := createAnchor(c.Stats)
+	anchor := createAnchor(c.Stats)
 	if anchor[0] < 0 {
 		return false, fmt.Errorf("Invalid value for stat in the cost buy rules")
 	}
@@ -331,13 +331,18 @@ func validateCharacterAbilityScores(c NewCharacter) (bool, error) {
 		currDiffVec := getStatesDiff(currState, statsCap)
 		currDiffSum := 0
 
+		fmt.Printf("Current state: %d\n", currState)
+		fmt.Printf("Current Diff Vector: %d\n", currDiffVec)
+
 		for _, diff := range currDiffVec {
 			currDiffSum += diff	
 		} 
 
 		if currCost > 27 || currCost < 0 {
 			return false, fmt.Errorf("Character has invalid attributes values")
-		} else if currCost <= 27 && currDiffSum == bonusPoints {
+		} else if currCost <= 27 && currDiffSum == bonusPoints { //those bonus points are fucking me in the ass
+			fmt.Printf("Final Diff Vector for maximizing cost phase: %d\n", currDiffVec)
+			fmt.Printf("Total bonus points: %d\n", currDiffSum)
 			break
 		}
 
@@ -351,11 +356,13 @@ func validateCharacterAbilityScores(c NewCharacter) (bool, error) {
 		}
 
 		anchor[pointer]++
-		absDiffVec[pointer]--
 	}
 
 	currState = anchor
 	bonusPointsDiff := getStatesDiff(currState, statsCap) 
+
+	fmt.Printf("Anchor before bonus points phase: %d\n", currState)
+	fmt.Printf("Diff Vector for bonus points: %d\n", bonusPointsDiff)
 
 	const maxIterations int = 100
 
@@ -366,13 +373,19 @@ func validateCharacterAbilityScores(c NewCharacter) (bool, error) {
 
 		for i, diff := range bonusPointsDiff {
 			if diff > 0 && bonusPoints > 0{
-				bonusPointsDiff[i]--
 				bonusPoints--
 				currState[i]++
 			} else if diff > 0 && bonusPoints <= 0 {
+				fmt.Printf("Failed at state: %d\n", currState)
 				return false, fmt.Errorf("Character has invalid stats, given that absDiffVec still has non zero values but ran out of bonus points")
 			}
 		}
+
+		bonusPointsDiff = getStatesDiff(currState, statsCap)
+
+		fmt.Printf("Current state after step %d: %d\n", (i + 1), currState)
+		fmt.Printf("Current bonus points diff vector after step %d: %d\n", (i + 1), bonusPointsDiff)
+		fmt.Printf("Remaining bonus points after step %d: %d\n", (i + 1), bonusPoints)
 	}
 
 	return false, fmt.Errorf("Character has invalid stats, even after achieving max iterations cap")
