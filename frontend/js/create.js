@@ -3,6 +3,19 @@ const classInfo = document.querySelector("#class-info");
 const characterStats = document.querySelector("#abilities");
 const form = document.querySelector("#character-form");
 const levelSelect = document.querySelector("#level");
+let creationBonusPoints = 0;
+let bonusPointsCap = 3;
+
+const bonusButtons = document.querySelectorAll("#abilities button");
+
+let allocatedBonus = {
+    "str": 0,
+    "dex": 0,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+}
 
 let lastValidScores = {
     "str": 8,
@@ -81,6 +94,36 @@ function validateStatsSelection(scores, scoresCost) {
         }
 
         return [false, 0, isValid];
+    }
+}
+
+function validateCreationBonusPoints(bonus) {
+    if (creationBonusPoints + bonus > bonusPointsCap) {
+        return false
+    }
+
+    return true
+}
+
+//TODO: Find a way to make this code ensure the correct structure for the initial bonus points allocation (one stat +2 and another +1)
+function validateAllocationBonusPoints() {
+    let allocatedBonusPoints = creationBonusPoints;
+    const statsVector = [
+        allocatedBonus.str,
+        allocatedBonus.dex,
+        allocatedBonus.con,
+        allocatedBonus.int,
+        allocatedBonus.wis,
+        allocatedBonus.cha
+    ] 
+
+    for (let i = 0; i < statsVector.length; i++) {
+        if (statsVector[i] % 2 != 0) {
+            statsVector[i]--;
+        } 
+        else {
+            statsVector[i] -= 2;
+        }
     }
 }
 
@@ -207,6 +250,81 @@ characterStats.addEventListener("change", async function(event){
         alert("Something unexpected happened...")
         return;
     }
+});
+
+//TODO: find a way to make this event work like: user click this specific button, then add the respective bonus points
+bonusButtons.forEach(function(button) {
+    button.addEventListener("click", function(event) {
+        const regex = /^(one|two)-bonus-(str|dex|con|int|wis|cha)$/;
+        const match = event.target.id.match(regex);
+
+        if (match[1] === "one") {
+            const creationBonusPointsOk = validateCreationBonusPoints(1);
+            if (!creationBonusPointsOk) {
+                alert("Already spent all bonus points for this character");
+                return;
+            }
+
+            creationBonusPoints++;
+            switch (match[2]) {
+                case "str":
+                    document.querySelector("#str").value++;
+                    break;
+                case "dex":
+                    document.querySelector("#dex").value++;
+                    break;
+                case "con":
+                    document.querySelector("#con").value++;
+                    break;
+                case "int":
+                    document.querySelector("#int").value++;
+                    break;
+                case "wis":
+                    document.querySelector("#wis").value++;
+                    break;
+                case "cha":
+                    document.querySelector("#cha").value++;
+                    break;
+            } 
+            allocatedBonus[match[2]]++;
+        }
+        else if (match[1] == "two") {
+            const creationBonusPointsOk = validateCreationBonusPoints(2);
+            if (!creationBonusPointsOk) {
+                alert("Already spent all bonus points for this character");
+                return;
+            }
+
+            creationBonusPoints += 2;
+            switch (match[2]) {
+                case "str":
+                    document.querySelector("#str").value = Number(document.querySelector("#str").value) + 2;
+                    break;
+                case "dex":
+                    document.querySelector("#dex").value = Number(document.querySelector("#dex").value) + 2;
+                    break;
+                case "con":
+                    document.querySelector("#con").value = Number(document.querySelector("#con").value) + 2;
+                    break;
+                case "int":
+                    document.querySelector("#int").value = Number(document.querySelector("#int").value) + 2;
+                    break;
+                case "wis":
+                    document.querySelector("#wis").value = Number(document.querySelector("#wis").value) + 2;
+                    break;
+                case "cha":
+                    document.querySelector("#cha").value = Number(document.querySelector("#cha").value) + 2;
+                    break;
+            } 
+            allocatedBonus[match[2]] += 2;
+        }
+        else {
+            alert("Couldnt find button");
+            return;
+        }
+
+        document.querySelector("#curr-bonus").textContent = `Available Bonus Points: ${bonusPointsCap - creationBonusPoints}`;
+    });
 });
 
 //send form information to the go server and do the first validation of data
