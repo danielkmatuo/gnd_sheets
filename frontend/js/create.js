@@ -78,17 +78,24 @@ function calculateTotalCost(attemptedState) {
     let currCost = 0;
    
     for (const value of Object.values(attemptedState)) {
-        currCost += value; 
+        console.log(value);
+        if (value < 8 || value > 15) {
+            alert("Invalid ability scores. The point buy scores must be within range 8 to 15");
+            return -1;
+        }
+
+        currCost += costMap.get(value);
     }
 
     return currCost;
 }
 
-function validateAbilityCost() {
-    const characterCost = calculateTotalCost();
-
-    if (characterCost > 27 || characterCost < 0) {
+function validateAbilityCost(characterCost) {
+    if (characterCost > 27) {
         alert("Invalid character. Total ability scores cost is above 27 or below 0");
+        return false;
+    }
+    else if (characterCost < 0) {
         return false;
     }
 
@@ -218,15 +225,8 @@ characterStats.forEach(function(statInput) {
             return;
         }
 
-        let currAttempt = {
-            "str": characterStr,
-            "dex": characterDex,
-            "con": characterCon,
-            "int": characterInt,
-            "wis": characterWis,
-            "cha": characterCha
-        };
-        
+        let currentAttempt = {...validPointBuyState};
+
         currAttempt[event.target.id] = Number(event.target.value);
         const currCost = calculateTotalCost(currAttempt);
         const isValidCost = validateAbilityCost(currCost);
@@ -295,7 +295,6 @@ bonusButtons.forEach(function(button) {
             const isValidCost = validateAbilityCost(currCost);
 
             if (!isValidCost) {
-                alert("Invalid ability scores. Total cost above or below the budget")
                 return;
             }
 
@@ -304,14 +303,13 @@ bonusButtons.forEach(function(button) {
             lastCharacterCost = currCost;
         }
         else if (match[1] === "down") {
-            currAttempt = validPointBuyState;
+            currAttempt = {...validPointBuyState};
             currAttempt[match[2]]--;
 
             currCost = calculateTotalCost(currAttempt)
             const isValidCost = validateAbilityCost(currCost);
 
             if (!isValidCost) {
-                alert("Invalid ability scores. Total cost above or below the budget")
                 return;
             }
 
@@ -324,6 +322,7 @@ bonusButtons.forEach(function(button) {
             return;
         }
 
+        document.querySelector("#curr-cost").textContent = "Current Cost: " + lastCharacterCost;
         document.querySelector("#curr-bonus").textContent = `Available Bonus Points: ${bonusPointsCap - creationBonusPoints}`;
     });
 });
@@ -332,7 +331,7 @@ resetBonusButton.addEventListener("click", async function() {
     creationBonusPoints = 0;
     for (const key of Object.keys(allocatedBonus)) {
         allocatedBonus[key] = 0;
-        document.querySelector(`#${key}`).value = lastValidScores[key]; 
+        document.querySelector(`#${key}`).value = validPointBuyState[key]; 
     }
 
     document.querySelector("#curr-bonus").textContent = `Available Bonus Points: ${bonusPointsCap}`;
