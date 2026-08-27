@@ -17,6 +17,15 @@ let allocatedBonus = {
     "cha": 0
 }
 
+let currBonusState = {
+    "str": 0,
+    "dex": 0,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+};
+
 let lastValidScores = {
     "str": 8,
     "dex": 8,
@@ -95,7 +104,7 @@ function validateStatsSelection(scores, scoresCost) {
 
         return [false, 0, isValid];
     }
-}
+    }
 
 function validateCreationBonusPoints(bonus) {
     if (creationBonusPoints + bonus > bonusPointsCap) {
@@ -106,24 +115,69 @@ function validateCreationBonusPoints(bonus) {
 }
 
 //TODO: Find a way to make this code ensure the correct structure for the initial bonus points allocation (one stat +2 and another +1)
-function validateAllocationBonusPoints() {
-    let allocatedBonusPoints = creationBonusPoints;
-    const statsVector = [
-        allocatedBonus.str,
-        allocatedBonus.dex,
-        allocatedBonus.con,
-        allocatedBonus.int,
-        allocatedBonus.wis,
-        allocatedBonus.cha
-    ] 
+function validateAllocationCreationBonusPoints(bonus) {
+    const bonusKeys = [
+        "str",
+        "dex",
+        "con",
+        "int",
+        "wis",
+        "cha"
+    ];
 
-    for (let i = 0; i < statsVector.length; i++) {
-        if (statsVector[i] % 2 != 0) {
-            statsVector[i]--;
+
+    if (bonus > 2 || bonus < 0) {
+        alert("Invalid bonus point allocation. Can only allocate +2 or +1");
+        return false;
+    }
+
+    let currDiff = 0;
+
+    for (let i = 0; i < bonusKeys.length; i++) {
+        currDiff += allocatedBonus[bonusKeys[i]] - currBonusState[bonusKeys[i]];
+    }
+    
+    if (currDiff > bonusPointsCap) {
+        alert("Invalid bonus point allocation. Trying to allocate bonus points beyond the budget");
+        return false;
+    }
+
+    let hasOneBonus = false;
+    let hasTwoBonus = false;
+
+    if (bonus === 2 && bonusPointsCap === 3) {
+        for (let i = 0; i < bonusKeys.length; i++) {
+            if (!hasOneBonus && allocatedBonus[bonusKeys[i]] === 1) {
+                hasOneBonus = true; 
+            }
+            else if (hasOneBonus && allocatedBonus[bonusKeys[i]] === 1) {
+                alert("Invalid bonus point allocation. Trying to allocate more than one +1 for the creation bonus points budget")
+                return false;
+            }
         } 
-        else {
-            statsVector[i] -= 2;
+
+        if (hasOneBonus) {
+            return true; 
         }
+        alert("something went wrong on the +2 branch of the algorithm, check again");
+        return false;
+    }
+    else if (bonus === 1 && bonusPointsCap === 3) {
+        for (let i = 0; i < bonusKeys.length; i++) {
+            if (!hasTwoBonus && allocatedBonus[bonusKeys[i]] === 2) {
+                hasTwoBonus = true;
+            }
+            else if (hasTwoBonus && allocatedBonus[bonusKeys[i]] === 2) {
+                alert("Invalid bonus point allocation. trying to allocate more than one +2 for the creation bonus points budget");
+                return false;
+            }
+        }
+
+        if (hasTwoBonus) {
+            return true;
+        }
+        alert("something went wrong on the +1 branch of the algorithm, check again");
+        return false;
     }
 }
 
@@ -287,6 +341,15 @@ bonusButtons.forEach(function(button) {
                     break;
             } 
             allocatedBonus[match[2]]++;
+            const bonusAllocationOk = validateAllocationCreationBonusPoints(1);
+
+            if (!bonusAllocationOk) {
+                allocatedBonus[match[2]]--;
+                return; 
+            } 
+            else {
+                currBonusState[match[2]]++;
+            }
         }
         else if (match[1] == "two") {
             const creationBonusPointsOk = validateCreationBonusPoints(2);
@@ -317,6 +380,15 @@ bonusButtons.forEach(function(button) {
                     break;
             } 
             allocatedBonus[match[2]] += 2;
+            const bonusAllocationOk = validateAllocationCreationBonusPoints(2);
+
+            if (!bonusAllocationOk) {
+                allocatedBonus[match[2]] -= 2;
+                return; 
+            } 
+            else {
+                currBonusState[match[2]] += 2;
+            }
         }
         else {
             alert("Couldnt find button");
