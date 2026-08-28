@@ -4,7 +4,6 @@ const characterStats = document.querySelectorAll("#abilities input");
 const form = document.querySelector("#character-form"); //For now, I don't need this
 const levelSelect = document.querySelector("#level");
 
-let creationBonusPoints = 0;
 let bonusPointsCap = 3; //TODO: change this baseline whenever I add feats options on character creation
 const bonusButtons = document.querySelectorAll("#abilities button");
 const resetBonusButton = document.querySelector("#reset-bonus");
@@ -70,7 +69,6 @@ function calculateTotalCost(attemptedState) {
     let currCost = 0;
    
     for (const value of Object.values(attemptedState)) {
-        console.log(value);
         if (value < 8 || value > 15) {
             alert("Invalid ability scores. The point buy scores must be within range 8 to 15");
             return -1;
@@ -94,8 +92,14 @@ function validateAbilityCost(characterCost) {
     return true;
 }
 
-function validateCreationBonusPoints(bonus) {
-    if (creationBonusPoints + bonus > bonusPointsCap) {
+function validateCreationBonusPoints(allocationAttempt) {
+    let bonusSum = 0;
+
+    for (const value of Object.values(allocationAttempt)) {
+        bonusSum += value;
+    }
+
+    if (bonusSum > bonusPointsCap) {
         return false;
     }
 
@@ -117,7 +121,7 @@ function tryAllocationBonusPoints(bonus, currStat) {
 
     let countOnes = 0;
 
-    if (!validateCreationBonusPoints(bonus)) {
+    if (!validateCreationBonusPoints(attemptedAllocation)) {
         alert("Invalid bonus point allocation. Can only allocate points until budget limit");
         return false;
     }
@@ -325,21 +329,21 @@ form.addEventListener("submit", async function(event) {
 
     console.log(character);
 
-//    const response = await fetch("/characters/create", {
-//        method: "POST",
-//
-//        headers: {
-//            "Content-Type": "application/json"
-//        },
+    const response = await fetch("/characters/create", {
+        method: "POST",
 
-//        body: JSON.stringify(character)
-//    });
+        headers: {
+            "Content-Type": "application/json"
+        },
 
-//    if (!response.ok) {
-//        const errorMessage = await response.text();
-//        console.error("Go server error:", errorMessage);
-//        return;
-//    }
+        body: JSON.stringify(character)
+    });
 
-//    window.location.href = "/characters";
+    if (!response.ok) {
+        const errorMessage = await response.text();
+        console.error("Go server error:", errorMessage);
+        return;
+    }
+
+    window.location.href = "/characters";
 });
