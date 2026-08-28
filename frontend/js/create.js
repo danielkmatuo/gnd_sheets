@@ -111,7 +111,7 @@ function validateCreationBonusPoints(bonus) {
 }
 
 //TODO: Find a way to make this code ensure the correct structure for the initial bonus points allocation (one stat +2 and another +1)
-function validateAllocationCreationBonusPoints(bonus, currStat) {
+function tryAllocationBonusPoints(bonus, currStat) {
     const bonusKeys = [
         "str",
         "dex",
@@ -120,23 +120,28 @@ function validateAllocationCreationBonusPoints(bonus, currStat) {
         "wis",
         "cha"
     ];
+    const attemptedAllocation = {...allocatedBonus};
+    attemptedAllocation[currStat] += bonus;
 
     let countOnes = 0;
+
+    if (!validateCreationBonusPoints(bonus)) {
+        alert("Invalid bonus point allocation. Can only allocate points until budget limit");
+        return false;
+    }
 
     if (bonus > 2 || bonus < 0) {
         alert("Invalid bonus point allocation. Can only allocate +2 or +1");
         return false;
     }
 
-    let currStatBonus = 0;
-
-    if (allocatedBonus[currStat] > 2) {
+    if (attemptedAllocation[currStat] > 2) {
         alert("Invalid bonus point allocation. Same stat received both +1 and +2");
         return false;
     }
 
     for (let i = 0; i < bonusKeys.length; i++) {
-        if (allocatedBonus[bonusKeys[i]] === 1) {
+        if (attemptedAllocation[bonusKeys[i]] === 1) {
             countOnes++;
         }
     }
@@ -146,7 +151,50 @@ function validateAllocationCreationBonusPoints(bonus, currStat) {
         return false;
     }
 
+    allocatedBonus = attemptedAllocation;
+
     return true;
+}
+
+function tryPointBuyChange(stat, newValue) {
+    const attempt = {...validPointBuyState};
+
+    attempt[stat] = newValue;
+
+    const cost = calculateTotalCost(attempt);
+
+    if (!validateAbilityCost(cost)) {
+        return false;
+    }
+
+    validPointBuyState = attempt;
+
+    return true;
+}
+
+function checkBothStates(bonus, stat, newValue) {
+    const pointBuyAttemptOk = tryPointBuyChange(stat, newValue);
+
+    if (pointBuyAttemptOk) {
+        const allocationOk = tryAllocationBonusPoints(bonus, stat);
+        if (!allocationOk) {
+            return false;
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+function renderAbilities() {
+    const stats = ["str", "dex", "con", "int", "wis", "cha"];
+
+    for (const stat of stats) {
+        document.querySelector(`#${stat}`).value = validPointBuyState[stat] + allocatedBonus[stat];
+    }
+
+    document.querySelector("#curr-cost").textContent = `Current Cost: ${calculateTotalCost(validPointBuyState)}`;
 }
 
 //changes data from index.html dynamically
@@ -217,7 +265,6 @@ classSelect.addEventListener("change", async function () {
 });
 
 //validate character ability scores from frontend
-//TODO: refactor to fit the new funcs to validate the character stats
 characterStats.forEach(function(statInput) {
     statInput.addEventListener("change", async function(event){
         if (event.target.value === "") {
@@ -225,105 +272,34 @@ characterStats.forEach(function(statInput) {
             return;
         }
 
-        let currentAttempt = {...validPointBuyState};
-
-        currAttempt[event.target.id] = Number(event.target.value);
-        const currCost = calculateTotalCost(currAttempt);
-        const isValidCost = validateAbilityCost(currCost);
-
-        if (isValidCost) {
-            lastCharacterCost = currCost;
-            validPointBuyState = currAttempt;
-            document.querySelector("#curr-cost").textContent = "Current Cost: " + lastCharacterCost;
-        }
+        tryPointBuyChange(event.target.id, Number(event.target.value));
+        renderAbilities();
     });
 });
 
-//gigantic mess of code to control the buttons behaviour
 bonusButtons.forEach(function(button) {
     button.addEventListener("click", function(event) {
         const regex = /^(one|two|up|down).*(str|dex|con|int|wis|cha)$/;
         const match = event.target.id.match(regex);
-
-        let currCost = 0;
+        const stat = match[2];
 
         if (match[1] === "one") {
-            const creationBonusPointsOk = validateCreationBonusPoints(1);
-            if (!creationBonusPointsOk) {
-                alert("Already spent all bonus points for this character");
-                return;
-            }
-
-            creationBonusPoints++;
-            document.querySelector(`#${match[2]}`).value++;
-
-            allocatedBonus[match[2]]++;
-            const bonusAllocationOk = validateAllocationCreationBonusPoints(1, match[2]);
-
-            if (!bonusAllocationOk) {
-                allocatedBonus[match[2]]--;
-                creationBonusPoints--;
-                document.querySelector(`#${match[2]}`).value--;
-                return; 
-            } 
+            checkBothStates(1, stat, validPointBuyState[stat]);
         }
-        else if (match[1] == "two") {
-            const creationBonusPointsOk = validateCreationBonusPoints(2);
-            if (!creationBonusPointsOk) {
-                alert("Already spent all bonus points for this character");
-                return;
-            }
-
-            creationBonusPoints += 2;
-            document.querySelector(`#${match[2]}`).value = Number(document.querySelector(`#${match[2]}`).value) + 2;
-
-            allocatedBonus[match[2]] += 2;
-            const bonusAllocationOk = validateAllocationCreationBonusPoints(2, match[2]);
-
-            if (!bonusAllocationOk) {
-                allocatedBonus[match[2]] -= 2;
-                creationBonusPoints -= 2;
-                document.querySelector(`#${match[2]}`).value = Number(document.querySelector(`#${match[2]}`).value) - 2;
-                return; 
-            }
-        }
-        else if (match[1] === "up") {
-            currAttempt = validPointBuyState;
-            currAttempt[match[2]]++;
-
-            currCost = calculateTotalCost(currAttempt)
-            const isValidCost = validateAbilityCost(currCost);
-
-            if (!isValidCost) {
-                return;
-            }
-
-            validPointBuyState = currAttempt;
-            document.querySelector(`#${match[2]}`).value++;
-            lastCharacterCost = currCost;
+        else if (match[1] === "two") {
+            checkBothStates(2, stat, validPointBuyState[stat]);
         }
         else if (match[1] === "down") {
-            currAttempt = {...validPointBuyState};
-            currAttempt[match[2]]--;
-
-            currCost = calculateTotalCost(currAttempt)
-            const isValidCost = validateAbilityCost(currCost);
-
-            if (!isValidCost) {
-                return;
-            }
-
-            validPointBuyState = currAttempt;
-            document.querySelector(`#${match[2]}`).value--;
-            lastCharacterCost = currCost;
+            tryPointBuyChange(stat, validPointBuyState[stat] - 1);
+        }
+        else if (match[1] === "up") {
+            tryPointBuyChange(stat, validPointBuyState[stat] + 1);    
         }
         else {
-            alert("Couldn't find buttons");
-            return;
+            alert("Buttons werent found");
         }
 
-        document.querySelector("#curr-cost").textContent = "Current Cost: " + lastCharacterCost;
-        document.querySelector("#curr-bonus").textContent = `Available Bonus Points: ${bonusPointsCap - creationBonusPoints}`;
+        renderAbilities();
     });
 });
 
