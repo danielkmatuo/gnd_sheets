@@ -185,12 +185,15 @@ function checkBothStates(bonus, stat, newValue) {
 
 function renderAbilities() {
     const stats = ["str", "dex", "con", "int", "wis", "cha"];
+    let usedBonus = 0;
 
     for (const stat of stats) {
         document.querySelector(`#${stat}`).value = validPointBuyState[stat] + allocatedBonus[stat];
+        usedBonus += allocatedBonus[stat];
     }
 
     document.querySelector("#curr-cost").textContent = `Current Cost: ${calculateTotalCost(validPointBuyState)}`;
+    document.querySelector("#curr-bonus").textContent = `Available Bonus Points: ${bonusPointsCap - usedBonus}`;
 }
 
 //changes data from index.html dynamically

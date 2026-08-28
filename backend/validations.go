@@ -262,6 +262,8 @@ func validateBonusPoints(c NewCharacter) (bool, error) {
 
 	if totalUsedBonus > bonusCap {
 		return false, fmt.Errorf("Invalid character ability scores. Used %d bonus points, which is higher than the %d cap", totalUsedBonus, bonusCap)
+	} else if totalUsedBonus < bonusCap {
+		return false, fmt.Errorf("Invalid character ability scores. Still have %d bonus points remaining", bonusCap - totalUsedBonus)
 	}
 	
 	if bonusCap == 3 {
@@ -321,11 +323,11 @@ func mergePointBuyAndBonus(c NewCharacter) (Attributes, error) {
 
 	stats := Attributes{
 		Str: c.PointBuy.Str + c.BonusPoints.Str,
-		Dex: c.PointBuy.Str + c.BonusPoints.Str,
-		Con: c.PointBuy.Str + c.BonusPoints.Str,
-		Int: c.PointBuy.Str + c.BonusPoints.Str,
-		Wis: c.PointBuy.Str + c.BonusPoints.Str,
-		Cha: c.PointBuy.Str + c.BonusPoints.Str,
+		Dex: c.PointBuy.Dex + c.BonusPoints.Dex,
+		Con: c.PointBuy.Con + c.BonusPoints.Con,
+		Int: c.PointBuy.Int + c.BonusPoints.Int,
+		Wis: c.PointBuy.Wis + c.BonusPoints.Wis,
+		Cha: c.PointBuy.Cha + c.BonusPoints.Cha,
 	}
 
 	statsRangeOk, err := validateStatsRange(stats)
@@ -392,6 +394,26 @@ func calculateStatBonus(stat int) int {
 	return bonus
 }
 
+func calculateStatBonusStruct(stats Attributes) Attributes {
+	bonusStr := calculateStatBonus(stats.Str)
+	bonusDex := calculateStatBonus(stats.Dex)
+	bonusCon := calculateStatBonus(stats.Con)
+	bonusInt := calculateStatBonus(stats.Int)
+	bonusWis := calculateStatBonus(stats.Wis)
+	bonusCha := calculateStatBonus(stats.Cha)
+
+	newBonus := Attributes{
+		Str: bonusStr,
+		Dex: bonusDex,
+		Con: bonusCon,
+		Int: bonusInt,
+		Wis: bonusWis,
+		Cha: bonusCha,
+	}
+
+	return newBonus
+}
+
 func calculateDynamicallyNewCharacter(c Character) (Character, error) {
 	referenceMap, err := getReferenceData()
 	if err != nil {
@@ -426,9 +448,12 @@ func calculateDynamicallyNewCharacter(c Character) (Character, error) {
 		return Character{}, fmt.Errorf("character has invalid max hp value")
 	}
 
+	statsBonus := calculateStatBonusStruct(c.Stats)
+
 	c.CurrHp = referenceMaxHp
 	c.AC = 10 + calculateStatBonus(c.Stats.Dex)
 	c.Speed = 9.0
+	c.StatsBonus = statsBonus
 
 	return c, nil
 }

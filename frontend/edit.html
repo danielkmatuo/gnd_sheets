@@ -7,21 +7,40 @@
         <meta name="author" content="danielkmatuo">
     </head>
     <body>
-        <h1>Edit you character</h1>
-        <p id="name"></p>
-        <p id="class"></p>
-        <p id="race"></p>
-        <p id="skills"></p>
-        <form id="character-form">
-            <div>
-                <button type="button" id="level-up">+</button>
-            </div>
-            <div>
-                <label for="level">Level</label>
-                <input type="number" id="level">
-            </div>
-            <button type="submit">Edit character</button>
-        </form>
-        <script src="/js/edit"></script>
+        <div>
+            <fieldset>
+                <legend>Character main infos</legend>
+                <p id="name"></p>
+                <p id="level"></p>
+                <p id="class"></p>
+                <p id="race"></p>
+            </fieldset>
+            <fieldset>
+                <legend>Character ability scores</legend>
+                <p id="str"></p>
+                <p id="dex"></p>
+                <p id="con"></p>
+                <p id="int"></p>
+                <p id="wis"></p>
+                <p id="cha"></p>
+            </fieldset>
+            <fieldset>
+                <legend>Character combat infos</legend>
+                <p id="hp"></p>
+                <p id="ac"></p>
+                <p id="speed"></p>
+            </fieldset>
+            <fieldset>
+                <legend>Character proficiencies</legend>
+                <p id="armor"></p>
+                <p id="weapons"></p>
+                <p id="tools"></p>
+                <p id="skills"></p>
+                <p id="saving"></p>
+            </fieldset>
+        </div>
+        <div id="redirects">
+        </div>
     </body>
+    <script src="/js/edit"></script>
 </html>
