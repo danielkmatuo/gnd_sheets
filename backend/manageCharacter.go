@@ -44,7 +44,8 @@ type NewCharacter struct {
 	Class string `json:"class"`
 	Race string `json:"race"`
 	Skills []string `json:"skills"`
-	Stats Attributes `json:"stats"`
+	PointBuy Attributes `json:"point_buy"`
+	BonusPoints Attributes `json:"bonus_points"`
 }
 
 func charactersHandler(w http.ResponseWriter, r *http.Request) {

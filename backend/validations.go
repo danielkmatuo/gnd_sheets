@@ -7,6 +7,56 @@ import (
 	"strings"
 )
 
+func validateNewCharacter(newCharacter NewCharacter, root string) (Character, error) {
+	c := Character{}
+
+	characterID, err := getRandomID(root)
+	if err != nil {
+		return Character{}, err
+	}	
+
+	if newCharacter.Name == "" {
+		return Character{}, fmt.Errorf("name cannot be empty")
+	}
+
+	if newCharacter.Class == "" {
+		return Character{}, fmt.Errorf("class cannot be empty")
+	}
+
+	if newCharacter.Race == "" {
+		return Character{}, fmt.Errorf("race cannot be empty")
+	}
+
+	if newCharacter.Level < 1 || newCharacter.Level > 20 {
+		return Character{}, fmt.Errorf("invalid level: must be within 1 to 20 range")
+	}
+
+	stats, err := mergePointBuyAndBonus(newCharacter)
+	if err != nil {
+		return Character{}, err
+	}
+
+	c.ID = characterID
+	c.Name = newCharacter.Name
+	c.Class = newCharacter.Class
+	c.Race = newCharacter.Race
+	c.Level = newCharacter.Level
+	c.SkillChoice.Chosen = newCharacter.Skills
+	c.Stats = stats
+
+	validatedByReference, err := validateByClassReferenceData(c)
+	if err != nil {
+		return Character{}, err
+	}
+	
+	dynamicallyCalculated, err := calculateDynamicallyNewCharacter(validatedByReference)
+	if err != nil {
+		return Character{}, err
+	}
+
+	return dynamicallyCalculated, nil
+}
+
 func validateByClassReferenceData(c Character) (Character, error) {
 	classInfoMap, err := getReferenceData()	
 	if err != nil {
@@ -15,9 +65,12 @@ func validateByClassReferenceData(c Character) (Character, error) {
 
 	referenceCharacter := classInfoMap[c.Class]
 	
-	if len(c.SkillChoice.Chosen) != referenceCharacter.SkillChoice.Cap {
-		return Character{}, fmt.Errorf("character must have exact %d skills", referenceCharacter.SkillChoice.Cap)
-	} 
+	skillsOk, err := validateSkillsByReference(referenceCharacter, c)
+	if err != nil {
+		return Character{}, err
+	} else if !skillsOk {
+		return Character{}, fmt.Errorf("Something unexpected happened in validateSkillsByReference")
+	}
 
 	if c.Level == 1 {
 		c.MaxHp, err = parseHitDie(referenceCharacter.HitDie)
@@ -50,56 +103,6 @@ func validateByClassReferenceData(c Character) (Character, error) {
 	return c, nil
 }
 
-func validateNewCharacter(newCharacter NewCharacter, root string) (Character, error) {
-	c := Character{}
-
-	characterID, err := getRandomID(root)
-	if err != nil {
-		return Character{}, err
-	}	
-
-	if newCharacter.Name == "" {
-		return Character{}, fmt.Errorf("name cannot be empty")
-	}
-
-	if newCharacter.Class == "" {
-		return Character{}, fmt.Errorf("class cannot be empty")
-	}
-
-	if newCharacter.Race == "" {
-		return Character{}, fmt.Errorf("race cannot be empty")
-	}
-
-	if newCharacter.Level < 1 || newCharacter.Level > 20 {
-		return Character{}, fmt.Errorf("invalid level: must be within 1 to 20 range")
-	}
-
-	statsValid, err := validateCharacterAbilityScores(newCharacter)
-	if !statsValid {
-		return Character{}, err
-	}
-
-	c.ID = characterID
-	c.Name = newCharacter.Name
-	c.Class = newCharacter.Class
-	c.Race = newCharacter.Race
-	c.Level = newCharacter.Level
-	c.SkillChoice.Chosen = newCharacter.Skills
-	c.Stats = newCharacter.Stats
-
-	validatedByReference, err := validateByClassReferenceData(c)
-	if err != nil {
-		return Character{}, err
-	}
-	
-	dynamicallyCalculated, err := calculateDynamicallyNewCharacter(validatedByReference)
-	if err != nil {
-		return Character{}, err
-	}
-
-	return dynamicallyCalculated, nil
-}
-
 func validateExistingCharacter(c Character) (Character, error){
 	var validated Character
 	referenceMap, err := getReferenceData()
@@ -109,12 +112,16 @@ func validateExistingCharacter(c Character) (Character, error){
 
 	reference := referenceMap[c.Class]
 
-	if len(c.SkillChoice.Chosen) != reference.SkillChoice.Cap {
-		return Character{}, fmt.Errorf("character must have exact %d", reference.SkillChoice.Cap)
-	} 
+	skillsOk, err := validateSkillsByReference(reference, c)
+	if err != nil {
+		return Character{}, err
+	} else if !skillsOk {
+		return Character{}, fmt.Errorf("Something unexpected happened in validateSkillsByReference")
+	}
 
 	if c.Level == 1 {
 		validated.MaxHp, err = parseHitDie(reference.HitDie)
+		validated.MaxHp += calculateStatBonus(c.Stats.Con)
 		if err != nil {
 			return Character{}, err
 		}
@@ -124,8 +131,8 @@ func validateExistingCharacter(c Character) (Character, error){
 			return Character{}, err
 		}
 
-		hitDieStep := int(math.Floor(float64(hitDieValue / 2)))
-		validated.MaxHp = hitDieValue + hitDieStep * (c.Level - 1)
+		hitDieStep := int(math.Floor(float64(hitDieValue / 2))) + 1
+		validated.MaxHp = hitDieValue + hitDieStep * (c.Level - 1) + calculateStatBonus(c.Stats.Con)
 	}
 
 	//passing values from c to validated
@@ -166,18 +173,20 @@ func parseHitDie(value string) (int, error) {
 	return parsedValue, nil
 }
 
-func validateAbilityCost(stats Attributes) bool {
-	statsValues := [6]int{stats.Str, stats.Dex, stats.Con, stats.Int, stats.Wis, stats.Cha}
-	currCost := calculateCurrCost(statsValues)
-
-	if currCost > 27 || currCost < 0 {
-		return false
+func validateAbilityCost(stats [6]int) (bool, error) {
+	currCost, err := calculateCurrCost(stats)
+	if err != nil {
+		return false, err
 	}
 
-	return true
+	if currCost > 27 {
+		return false, fmt.Errorf("Invalid character ability score. Current score %d is above 27", currCost)
+	}
+
+	return true, nil
 }
 
-func calculateCurrCost(stats [6]int) int {
+func calculateCurrCost(stats [6]int) (int, error) {
 	costMap := make(map[int]int)
 	allowedStatsValues := [8]int{8, 9, 10, 11, 12, 13, 14, 15}
 	allowedCostsValues := [8]int{0, 1, 2, 3, 4, 5, 7, 9}
@@ -192,11 +201,163 @@ func calculateCurrCost(stats [6]int) int {
 		if value >= 8 && value <= 15 {
 			currCost += costMap[value]	
 		} else {
-			return -1
+			return -1, fmt.Errorf("Invalid character ability score. Score %d is out of the range 8 to 15", value)
 		}
 	}
 
-	return currCost
+	return currCost, nil
+}
+
+func validatePointBuy(c NewCharacter) (bool, error) {
+	pointsBought := [6]int{
+		c.PointBuy.Str,
+		c.PointBuy.Dex,
+		c.PointBuy.Con,
+		c.PointBuy.Int,
+		c.PointBuy.Wis,
+		c.PointBuy.Cha,
+	}
+
+	costOk, err := validateAbilityCost(pointsBought)
+	if err != nil {
+		return false, err
+	}
+	
+	if !costOk {
+		return false, fmt.Errorf("Something unexpected happened in validatePointBuy()")
+	}	
+
+	return true, nil
+}
+
+func defineBonusPointsCap(level int) int {
+	cap := 3
+	for i := range level {
+		if (i + 1) % 4 == 0 {
+			cap += 2
+		}
+	}
+	
+	return cap
+}
+
+func validateBonusPoints(c NewCharacter) (bool, error) {
+	characterLevel := c.Level
+	bonusCap := defineBonusPointsCap(characterLevel)
+
+	bonusPoints := [6]int{
+		c.BonusPoints.Str,
+		c.BonusPoints.Dex,
+		c.BonusPoints.Con,
+		c.BonusPoints.Int,
+		c.BonusPoints.Wis,
+		c.BonusPoints.Cha,
+	}
+	
+	totalUsedBonus := 0
+
+	for	_, bonus := range bonusPoints {
+		totalUsedBonus += bonus	
+	} 
+
+	if totalUsedBonus > bonusCap {
+		return false, fmt.Errorf("Invalid character ability scores. Used %d bonus points, which is higher than the %d cap", totalUsedBonus, bonusCap)
+	}
+	
+	if bonusCap == 3 {
+		countOnes := 0
+		hasTwoBonus := false
+		for _, bonus := range bonusPoints {
+			if bonus == 1 {
+				countOnes++
+			} else if bonus == 2{
+				hasTwoBonus = true
+			}	
+		}
+		
+		if countOnes != 1 {
+			return false, fmt.Errorf("Invalid character ability scores. Used more than one +1 for a level %d character", characterLevel)
+		} else if !hasTwoBonus {
+			return false, fmt.Errorf("Invalid character ability scores. Did not use the +2 bonus point")
+		}
+	}
+
+	return true, nil
+}
+
+func validateStatsRange(stats Attributes) (bool, error) {
+	statsValues := [6]int{
+		stats.Str,
+		stats.Dex,
+		stats.Con,
+		stats.Int,
+		stats.Wis,
+		stats.Cha,
+	}
+
+	for _, value := range statsValues {
+		if value > 30 || value < 8 {
+			return false, fmt.Errorf("Invalid character ability score. Score %d is out of range 8 to 30", value)
+		}
+	}
+
+	return true, nil
+}
+
+func mergePointBuyAndBonus(c NewCharacter) (Attributes, error) {
+	validPointBuy, err := validatePointBuy(c)
+	if err != nil {
+		return Attributes{}, err
+	}
+
+	validBonus, err := validateBonusPoints(c)
+	if err != nil {
+		return Attributes{}, err
+	}
+
+	if !validPointBuy && !validBonus {
+		return Attributes{}, fmt.Errorf("Something went wrong in mergePointBuyAndBonus()")
+	}
+
+	stats := Attributes{
+		Str: c.PointBuy.Str + c.BonusPoints.Str,
+		Dex: c.PointBuy.Str + c.BonusPoints.Str,
+		Con: c.PointBuy.Str + c.BonusPoints.Str,
+		Int: c.PointBuy.Str + c.BonusPoints.Str,
+		Wis: c.PointBuy.Str + c.BonusPoints.Str,
+		Cha: c.PointBuy.Str + c.BonusPoints.Str,
+	}
+
+	statsRangeOk, err := validateStatsRange(stats)
+	if err != nil {
+		return Attributes{}, err 
+	} else if !statsRangeOk {
+		return Attributes{}, fmt.Errorf("Something went wrong in mergePointBuyAndBonus()")
+	}
+
+	return stats, nil
+}
+
+func validateSkillsByReference(reference ClassInfo, c Character) (bool, error) {
+	skillCap := reference.SkillChoice.Cap	
+	referenceSkills := reference.SkillChoice.Possibilities
+	userChoices := c.SkillChoice.Chosen
+
+	countValidSkills := 0
+
+	for _, chosenSkill := range userChoices {
+		for _, skill := range referenceSkills {
+			if chosenSkill == skill {
+				countValidSkills++
+			} 
+		}
+	}
+
+	if countValidSkills != skillCap {
+		return false, fmt.Errorf("Invalid skills. Chose a quantity of valid skills different from %d", skillCap)
+	}
+
+	return true, nil
 }
 
 func calculateStatBonus(stat int) int {
@@ -229,177 +390,6 @@ func calculateStatBonus(stat int) int {
 	bonus = (stat - baselineStatValue - 1) / 2
 
 	return bonus
-}
-
-func createAnchor(stats Attributes) [6]int {
-	finalState := [6]int{stats.Str, stats.Dex, stats.Con, stats.Int, stats.Wis, stats.Cha}
-
-	var absDiffVec [6]int
-	var anchor [6]int
-
-	for i, stat := range finalState {
-		absDiffVec[i] = stat - 8	
-		if absDiffVec[i] < 5 {
-			anchor[i] = stat
-		} else {
-			anchor[i] = 13
-		}
-	}
-
-	currCost := calculateCurrCost(anchor)
-	if currCost > 27 {
-		anchor[0] = 12
-		anchor[1] = 12
-		anchor[2] = 12
-	} else if currCost < 0 {
-		return [6]int{-1}
-	}
-
-	return anchor
-}
-
-func getStatesDiff(currState [6]int, finalState [6]int) [6]int {
-	var currDiffVec [6]int
-	for i, statCap := range finalState {
-		currDiffVec[i] = currState[i] - statCap
-	}
-
-	return currDiffVec
-}
-
-func validateRangeCharacterAbilityScores(level int, c NewCharacter) bool {
-	if level > 1 {
-		if c.Stats.Str < 8 || c.Stats.Str > 20 {
-			return false
-		} else if c.Stats.Dex < 8 || c.Stats.Dex > 20 {
-			return false
-		} else if c.Stats.Con < 8 || c.Stats.Con > 20 {
-			return false
-		} else if c.Stats.Int < 8 || c.Stats.Int > 20 {
-			return false
-		} else if c.Stats.Wis < 8 || c.Stats.Wis > 20 {
-			return false
-		} else if c.Stats.Cha < 8 || c.Stats.Cha > 20 {
-			return false
-		} 
-	}
-
-	costOk := validateAbilityCost(c.Stats)
-	if !costOk {
-		return false
-	} else if c.Stats.Str < 8 || c.Stats.Str > 15 {
-		return false
-	} else if c.Stats.Dex < 8 || c.Stats.Dex > 15 {
-		return false
-	} else if c.Stats.Con < 8 || c.Stats.Con > 15 {
-		return false
-	} else if c.Stats.Int < 8 || c.Stats.Int > 15 {
-		return false
-	} else if c.Stats.Wis < 8 || c.Stats.Wis > 15 {
-		return false
-	} else if c.Stats.Cha < 8 || c.Stats.Cha > 15 {
-		return false
-	}
-	
-	return true
-}
-
-func validateCharacterAbilityScores(c NewCharacter) (bool, error) {
-	validateRangeAndCost := validateRangeCharacterAbilityScores(c.Level, c)
-	if !validateRangeAndCost {
-		return false, fmt.Errorf("Character doesnt follow character creation level rules or doesnt follow cost buy rules")
-	}
-
-	var currState [6]int
-	anchor := createAnchor(c.Stats)
-	if anchor[0] < 0 {
-		return false, fmt.Errorf("Invalid value for stat in the cost buy rules")
-	}
-	bonusPoints := defineBonusPoints(c.Level)
-	statsCap := [6]int{
-		c.Stats.Str, 
-		c.Stats.Dex, 
-		c.Stats.Con, 
-		c.Stats.Int, 
-		c.Stats.Wis, 
-		c.Stats.Cha,
-	}
-
-	for {
-		currCost := calculateCurrCost(anchor)
-		currState = anchor
-		currDiffVec := getStatesDiff(currState, statsCap)
-		currDiffSum := 0
-
-		fmt.Printf("Current state: %d\n", currState)
-		fmt.Printf("Current Diff Vector: %d\n", currDiffVec)
-
-		for _, diff := range currDiffVec {
-			currDiffSum += diff	
-		} 
-
-		if currCost > 27 || currCost < 0 {
-			return false, fmt.Errorf("Character has invalid attributes values")
-		} else if currCost <= 27 && currDiffSum == bonusPoints { //those bonus points are fucking me in the ass
-			fmt.Printf("Final Diff Vector for maximizing cost phase: %d\n", currDiffVec)
-			fmt.Printf("Total bonus points: %d\n", currDiffSum)
-			break
-		}
-
-		minAbsDiff := 100
-		pointer := 0
-		for i, diff := range currDiffVec {
-			if diff <= minAbsDiff && diff > 0 {
-				minAbsDiff = diff
-				pointer = i
-			}
-		}
-
-		anchor[pointer]++
-	}
-
-	currState = anchor
-	bonusPointsDiff := getStatesDiff(currState, statsCap) 
-
-	fmt.Printf("Anchor before bonus points phase: %d\n", currState)
-	fmt.Printf("Diff Vector for bonus points: %d\n", bonusPointsDiff)
-
-	const maxIterations int = 100
-
-	for i := 0; i < maxIterations; i++ {
-		if currState == statsCap {
-			return true, nil
-		}	
-
-		for i, diff := range bonusPointsDiff {
-			if diff > 0 && bonusPoints > 0{
-				bonusPoints--
-				currState[i]++
-			} else if diff > 0 && bonusPoints <= 0 {
-				fmt.Printf("Failed at state: %d\n", currState)
-				return false, fmt.Errorf("Character has invalid stats, given that absDiffVec still has non zero values but ran out of bonus points")
-			}
-		}
-
-		bonusPointsDiff = getStatesDiff(currState, statsCap)
-
-		fmt.Printf("Current state after step %d: %d\n", (i + 1), currState)
-		fmt.Printf("Current bonus points diff vector after step %d: %d\n", (i + 1), bonusPointsDiff)
-		fmt.Printf("Remaining bonus points after step %d: %d\n", (i + 1), bonusPoints)
-	}
-
-	return false, fmt.Errorf("Character has invalid stats, even after achieving max iterations cap")
-}
-
-func defineBonusPoints(level int) int {
-	extraCost := 3
-	for i := range level {
-		if (i + 1) % 4 == 0 {
-			extraCost += 2
-		}
-	}
-
-	return extraCost
 }
 
 func calculateDynamicallyNewCharacter(c Character) (Character, error) {

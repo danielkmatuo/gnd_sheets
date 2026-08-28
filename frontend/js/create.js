@@ -1,17 +1,9 @@
 const classSelect = document.querySelector("#class");
 const classInfo = document.querySelector("#class-info");
 const characterStats = document.querySelectorAll("#abilities input");
-const form = document.querySelector("#character-form");
+const form = document.querySelector("#character-form"); //For now, I don't need this
 const levelSelect = document.querySelector("#level");
 
-const characterStr = Number(document.querySelector("#str").value);
-const characterDex = Number(document.querySelector("#dex").value);
-const characterCon = Number(document.querySelector("#con").value);
-const characterInt = Number(document.querySelector("#int").value);
-const characterWis = Number(document.querySelector("#wis").value);
-const characterCha = Number(document.querySelector("#cha").value);
-
-let lastCharacterCost = 0;
 let creationBonusPoints = 0;
 let bonusPointsCap = 3; //TODO: change this baseline whenever I add feats options on character creation
 const bonusButtons = document.querySelectorAll("#abilities button");
@@ -317,40 +309,37 @@ resetBonusButton.addEventListener("click", async function() {
 form.addEventListener("submit", async function(event) {
     event.preventDefault();
 
-    const formData = new FormData(form);
-    const character = Object.fromEntries(formData.entries());
-    const statNames = ["str", "dex", "con", "int", "wis", "cha"];
+    const skills = Array.from(
+        document.querySelectorAll('input[name="skills"]:checked')
+    ).map(input => input.value);
 
-    character.stats = Object.fromEntries(
-        statNames.map(function(stat){
-            return [stat, Number(character[stat])];
-        })
-    );
-
-    for (const stat of statNames) {
-        delete character[stat];
+    character = {
+        "name": document.querySelector("#name").value,
+        "level": Number(document.querySelector("#level").value), 
+        "class": classSelect.value,
+        "race": document.querySelector("#race").value,
+        "skills": skills,
+        "point_buy": validPointBuyState,
+        "bonus_points": allocatedBonus
     }
-
-    character.skills = formData.getAll("skills");
-    character.level = Number(character.level);
 
     console.log(character);
 
-    const response = await fetch("/characters/create", {
-        method: "POST",
+//    const response = await fetch("/characters/create", {
+//        method: "POST",
+//
+//        headers: {
+//            "Content-Type": "application/json"
+//        },
 
-        headers: {
-            "Content-Type": "application/json"
-        },
+//        body: JSON.stringify(character)
+//    });
 
-        body: JSON.stringify(character)
-    });
+//    if (!response.ok) {
+//        const errorMessage = await response.text();
+//        console.error("Go server error:", errorMessage);
+//        return;
+//    }
 
-    if (!response.ok) {
-        const errorMessage = await response.text();
-        console.error("Go server error:", errorMessage);
-        return;
-    }
-
-    window.location.href = "/characters";
+//    window.location.href = "/characters";
 });
