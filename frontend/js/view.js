@@ -63,12 +63,12 @@ function populateViewPage(data) {
     characterRace.textContent = "Race: " + data.race;
     characterLevel.textContent = "Level: " + data.level;
 
-    characterStr.textContent = "Strengh: " + data.stats.str + ` (${returnStatBounsString(data.stats_bonus.str)})`;
-    characterDex.textContent = "Dexterity: " + data.stats.dex + ` (${returnStatBounsString(data.stats_bonus.dex)})`;
-    characterCon.textContent = "Constitution: " + data.stats.con + ` (${returnStatBounsString(data.stats_bonus.con)})`;
-    characterInt.textContent = "Intelligence: " + data.stats.int + ` (${returnStatBounsString(data.stats_bonus.int)})`;
-    characterWis.textContent = "Wisdom: " + data.stats.wis + ` (${returnStatBounsString(data.stats_bonus.wis)})`;
-    characterCha.textContent = "Charisma: " + data.stats.cha + ` (${returnStatBounsString(data.stats_bonus.cha)})`;
+    characterStr.textContent = "Strengh: " + data.stats.str + ` (${returnStatBounsString(data.ability_modifier.str)})`;
+    characterDex.textContent = "Dexterity: " + data.stats.dex + ` (${returnStatBounsString(data.ability_modifier.dex)})`;
+    characterCon.textContent = "Constitution: " + data.stats.con + ` (${returnStatBounsString(data.ability_modifier.con)})`;
+    characterInt.textContent = "Intelligence: " + data.stats.int + ` (${returnStatBounsString(data.ability_modifier.int)})`;
+    characterWis.textContent = "Wisdom: " + data.stats.wis + ` (${returnStatBounsString(data.ability_modifier.wis)})`;
+    characterCha.textContent = "Charisma: " + data.stats.cha + ` (${returnStatBounsString(data.ability_modifier.cha)})`;
     
     characterHpPointer.textContent = "HP: " + data.current_hp + "/" + data.max_hp;
     characterAc.textContent = "AC: " + data.ac;

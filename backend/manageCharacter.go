@@ -36,7 +36,8 @@ type Character struct {
 	AC int `json:"ac"`
 	Speed float64 `json:"speed"`
 	Stats Attributes `json:"stats"`
-	StatsBonus Attributes `json:"stats_bonus"`
+	BonusPoints Attributes `json:"bonus_points"`
+	AbilitiesModifiers Attributes `json:"ability_modifier"`
 }
 
 type NewCharacter struct {

@@ -31,7 +31,7 @@ func validateNewCharacter(newCharacter NewCharacter, root string) (Character, er
 		return Character{}, fmt.Errorf("invalid level: must be within 1 to 20 range")
 	}
 
-	stats, err := mergePointBuyAndBonus(newCharacter)
+	stats, bonusPoints, err := mergePointBuyAndBonus(newCharacter)
 	if err != nil {
 		return Character{}, err
 	}
@@ -43,6 +43,7 @@ func validateNewCharacter(newCharacter NewCharacter, root string) (Character, er
 	c.Level = newCharacter.Level
 	c.SkillChoice.Chosen = newCharacter.Skills
 	c.Stats = stats
+	c.BonusPoints = bonusPoints
 
 	validatedByReference, err := validateByClassReferenceData(c)
 	if err != nil {
@@ -306,19 +307,19 @@ func validateStatsRange(stats Attributes) (bool, error) {
 	return true, nil
 }
 
-func mergePointBuyAndBonus(c NewCharacter) (Attributes, error) {
+func mergePointBuyAndBonus(c NewCharacter) (Attributes, Attributes, error) {
 	validPointBuy, err := validatePointBuy(c)
 	if err != nil {
-		return Attributes{}, err
+		return Attributes{}, Attributes{}, err
 	}
 
 	validBonus, err := validateBonusPoints(c)
 	if err != nil {
-		return Attributes{}, err
+		return Attributes{}, Attributes{}, err
 	}
 
 	if !validPointBuy && !validBonus {
-		return Attributes{}, fmt.Errorf("Something went wrong in mergePointBuyAndBonus()")
+		return Attributes{}, Attributes{}, fmt.Errorf("Something went wrong in mergePointBuyAndBonus()")
 	}
 
 	stats := Attributes{
@@ -332,12 +333,12 @@ func mergePointBuyAndBonus(c NewCharacter) (Attributes, error) {
 
 	statsRangeOk, err := validateStatsRange(stats)
 	if err != nil {
-		return Attributes{}, err 
+		return Attributes{}, Attributes{}, err 
 	} else if !statsRangeOk {
-		return Attributes{}, fmt.Errorf("Something went wrong in mergePointBuyAndBonus()")
+		return Attributes{}, Attributes{}, fmt.Errorf("Something went wrong in mergePointBuyAndBonus()")
 	}
 
-	return stats, nil
+	return stats, c.BonusPoints, nil
 }
 
 func validateSkillsByReference(reference ClassInfo, c Character) (bool, error) {
@@ -453,7 +454,7 @@ func calculateDynamicallyNewCharacter(c Character) (Character, error) {
 	c.CurrHp = referenceMaxHp
 	c.AC = 10 + calculateStatBonus(c.Stats.Dex)
 	c.Speed = 9.0
-	c.StatsBonus = statsBonus
+	c.AbilitiesModifiers = statsBonus
 
 	return c, nil
 }

@@ -1,7 +1,19 @@
 #!/usr/bin/env fish
 
-# Start with a completely clean distribution directory
 echo "Starting build process..."
+echo "Backing up existing characters data..."
+set backup_dir (mktemp -d)
+
+# Preserve development characters if they exist
+if test -d dist/gnd-sheets-linux-amd64/data/characters
+    cp -r dist/gnd-sheets-linux-amd64/data/characters $backup_dir/
+end
+
+if test -d dist/gnd-sheets-windows-amd64/data/characters
+    cp -r dist/gnd-sheets-windows-amd64/data/characters $backup_dir/
+end
+
+# Start with a completely clean distribution directory
 rm -rf dist
 echo "Removed dist dir..."
 
@@ -43,5 +55,17 @@ zip -r gnd-sheets-windows-amd64.zip gnd-sheets-windows-amd64
 tar -czf gnd-sheets-linux-amd64.tar.gz gnd-sheets-linux-amd64
 
 cd ..
+
+# Restore development characters
+echo "Restoring backed up characteres data..."
+if test -d $backup_dir/characters
+    cp -r $backup_dir/characters dist/gnd-sheets-linux-amd64/data/characters
+end
+
+if test -d $backup_dir/characters
+    cp -r $backup_dir/characters dist/gnd-sheets-windows-amd64/data/characters
+end
+
+rm -rf $backup_dir
 
 echo "Build complete!"
