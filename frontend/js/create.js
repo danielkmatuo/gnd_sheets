@@ -1,5 +1,8 @@
 const classSelect = document.querySelector("#class");
 const classInfo = document.querySelector("#class-info");
+
+const raceSelect = document.querySelector("#race");
+
 const characterStats = document.querySelectorAll("#abilities input");
 const form = document.querySelector("#character-form"); //For now, I don't need this
 const levelSelect = document.querySelector("#level");
@@ -26,6 +29,67 @@ let validPointBuyState = {
     "cha": 8
 };
 
+//fetches the reference data from the backend
+async function getClassInfoFromReference (selectedClass) {
+    const response = await fetch(
+        `/reference/classes/${selectedClass}`
+    );
+
+    if (!response.ok) {
+        alert("Could not load class information from server.");
+        const errorMessage = await response.text();
+        console.error("Go server error: ", errorMessage)
+        return;
+    }
+
+    return response;
+}
+
+async function getRaceInfoFromReference(selectedRace) {
+    const response = await fetch(
+        `/reference/races/${selectedRace}`
+    );
+
+    if (!response.ok) {
+        alert("Could not load race information from server.");
+        const errorMessage = await response.text();
+        console.error("Go server error: ", errorMessage)
+        return;
+    }
+
+    return response;
+}
+
+async function getLanguagesInfoFromReference(selectedRace) {
+    const response = await fetch(
+        `/reference/languages`
+    );
+
+    if (!response.ok) {
+        alert("Could not load race information from server.");
+        const errorMessage = await response.text();
+        console.error("Go server error: ", errorMessage)
+        return;
+    }
+
+    return response;
+}
+
+async function getSkillsInfoFromReference(selectedRace) {
+    const response = await fetch(
+        `/reference/skills`
+    );
+
+    if (!response.ok) {
+        alert("Could not load race information from server.");
+        const errorMessage = await response.text();
+        console.error("Go server error: ", errorMessage)
+        return;
+    }
+
+    return response;
+}
+
 //make user able to only choose skills equal to the number of skills cap
 function quantitySkillsCheck (quantity, data) {
     const skillIssues = data.skill_choices.choose;
@@ -36,19 +100,18 @@ function quantitySkillsCheck (quantity, data) {
     return true;
 }
 
-async function getClassInfoFromReference (selectedClass) {
-    const response = await fetch(
-        `/reference/classes/${selectedClass}`
-    );
+//TODO: calculate proficiency bonus based on level selected by the user
+function calculateProficiencyBonus() {
+    level = Number(levelSelect.value);
+    baselineBonus = 2;
 
-    if (!response.ok) {
-        classInfo.textContent = "could not load class informataion from server.";
-        return;
+    if (level < 1 || level > 20) {
+        alert("Invalid level. Must be in range 1 to 20");
+        return -1;
     }
-
-    return response;
 }
 
+//frontend validation of the character ability scores
 function instantiateCostsMap() {
     const scoresCosts = new Map(); 
 
@@ -106,7 +169,6 @@ function validateCreationBonusPoints(allocationAttempt) {
     return true;
 }
 
-//TODO: Find a way to make this code ensure the correct structure for the initial bonus points allocation (one stat +2 and another +1)
 function tryAllocationBonusPoints(bonus, currStat) {
     const bonusKeys = [
         "str",
@@ -183,6 +245,7 @@ function checkBothStates(bonus, stat, newValue) {
     return false;
 }
 
+//render stuff on the frontend
 function renderAbilities() {
     const stats = ["str", "dex", "con", "int", "wis", "cha"];
     let usedBonus = 0;
