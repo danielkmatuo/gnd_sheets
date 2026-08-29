@@ -1,0 +1,29 @@
+{
+    "str": ["Athletics"],
+    "dex": [
+        "Acrobatics",
+        "Sleight of Hand",
+        "Stealth"
+    ],
+    "con": [],
+    "int": [
+        "Arcana",
+        "Investigation",
+        "History",
+        "Religion",
+        "Nature"
+    ],
+    "wis": [
+        "Animal Handling",
+        "Insight",
+        "Medicine",
+        "Perception",
+        "Survival"
+    ],
+    "cha": [
+        "Deception",
+        "Intimidation",
+        "Performance",
+        "Persuasion"
+    ]
+}

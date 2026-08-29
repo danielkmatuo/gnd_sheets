@@ -312,7 +312,7 @@
            },
            "Half-Elf Versatility": {
                 "choose": 1,
-                "choices": {
+                "trait_choices": {
                     "Skill Versatility": {
                         "description": "You gain proficiency in two skills of your choice.",
                         "choose": 2,
@@ -388,7 +388,8 @@
                 "description": "When you are reduced to 0 hit points but not killed outright, you can drop to 1 hit point instead. You can't use this feature again until you finish a long rest.",
                 "reset": "long",
                 "uses": 1,
-                "curr_hp": 0
+                "hp_trigger": 0,
+                "set_hp": 1
             },
             "Savage Attacks": {
                 "description": "When you score a critical hit with a melee weapon attack, you can roll one of the weapon's damage dice one additional time and add it to the extra damage of the critical hit."
@@ -443,7 +444,7 @@
             },
             "Skills": {
                 "description": "You gain proficiency in one skill of your choice.",
-                "choose": 2,
+                "choose": 1,
                 "choices": [],
                 "choice_type": "skills"
             },

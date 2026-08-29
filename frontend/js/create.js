@@ -208,25 +208,25 @@ classSelect.addEventListener("change", async function () {
 
     const response = await getClassInfoFromReference(selectedClass);
 
-    const data = await response.json();
+    const classData = await response.json();
 
     var html = `
-        <h2>${data.name}</h2>
-        <p>Hit Die: ${data.hit_die}</p>
-        <p>Saving Throws: ${data.proficiencies.saving_throws.join(", ")}</p>
-        <p>Armor proficiencies: ${data.proficiencies.armor.join(", ")} </p>
-        <p>Weapon proficiencies: ${data.proficiencies.weapons.join(", ")}</p>
-        <p>Tools proficiencies: ${data.proficiencies.tools.join(", ")}</p>
+        <h2>${classData.name}</h2>
+        <p>Hit Die: ${classData.hit_die}</p>
+        <p>Saving Throws: ${classData.proficiencies.saving_throws.join(", ")}</p>
+        <p>Armor proficiencies: ${classData.proficiencies.armor.join(", ")} </p>
+        <p>Weapon proficiencies: ${classData.proficiencies.weapons.join(", ")}</p>
+        <p>Tools proficiencies: ${classData.proficiencies.tools.join(", ")}</p>
         <fieldset>
-            <legend>Choose ${data.skill_choices.choose} skills:</legend>
+            <legend>Choose ${classData.skill_choices.choose} skills:</legend>
     `;
 
     var numSkills = data.skill_choices.from.length
     for (var i = 0; i < numSkills; i++) {
         html += `
         <div>
-            <input type="checkbox" id="skill${i}" name="skills" value="${data.skill_choices.from[i]}">
-            <label for="skill${i}">${data.skill_choices.from[i]}</label>
+            <input type="checkbox" id="skill${i}" name="skills" value="${classData.skill_choices.from[i]}">
+            <label for="skill${i}">${classData.skill_choices.from[i]}</label>
         </div>
         `;
     }

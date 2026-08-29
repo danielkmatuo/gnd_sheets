@@ -1,6 +1,12 @@
 package backend
 
-import "net/http"
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"os"
+	"path/filepath"
+)
 
 //Generic race
 type Race struct {
@@ -31,7 +37,8 @@ type Trait struct {
 	Uses int `json:"uses"`
 	Reset string `json:"reset"`
 
-	CurrHp int `json:"curr_hp"`
+	HpTrigger int `json:"hp_trigger"`
+	SetHp int `json:"set_hp"`
 
 	ResistTypes []string `json:"resist_types"`
 
@@ -39,6 +46,8 @@ type Trait struct {
 	From []string `json:"choices"`
 	ChoiceType string `json:"choice_type"`
 	StatBonus int `json:"stat_bonus"`
+
+	TraitChoices map[string]Trait `json:"trait_choices"`
 
 	BonusSpells BonusSpellsTrait `json:"bonus_spells"`	
 	SpellModifier string `json:"spellcasting_stat"`
@@ -51,9 +60,7 @@ type Trait struct {
 }
 
 //Traits with weird mechanics, so its better to break them down into separated structs
-type BonusSpellsTrait struct {
-	Spells map[string]SpellFromTrait `json:"bonus_spells"`
-}
+type BonusSpellsTrait map[string]SpellFromTrait
 
 type SpellFromTrait struct {
 	Level int `json:"level"`
@@ -81,10 +88,51 @@ type BreathWeaponTrait struct {
 	Damage map[int]string `json:"damage"`
 	BaselineDC int `json:"baseline_dc"`
 	ModifierDC string `json:"modifier_dc"`
-	Reset int `json:"reset"`
+	Reset string `json:"reset"`
 	Uses int `json:"uses"`
 }
 
 func raceReferenceHandler(w http.ResponseWriter, r *http.Request) {
-	return	
+	userRace := r.PathValue("race")
+
+	referenceRace, err := getRaceReferenceData(userRace)
+	if err != nil {
+		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
+		return
+	}
+	
+	w.Header().Set("Content-type", "application/json")
+
+	err = json.NewEncoder(w).Encode(referenceRace)
+	if err != nil {
+		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func getRaceReferenceData(userRace string) (Race, error) {
+	root := findRootDir()
+	if root == "" {
+		return Race{}, fmt.Errorf("couldnt find root")
+	}
+
+	referenceDataPath := filepath.Join(root, "data", "reference", "races.json")
+
+	referenceBytes, err := os.ReadFile(referenceDataPath)
+	if err != nil {
+		return Race{}, err
+	}
+
+	var raceMap map[string]Race
+	err = json.Unmarshal(referenceBytes, &raceMap)
+	if err != nil {
+		return Race{}, err
+	}
+
+	race, ok := raceMap[userRace]
+	if !ok {
+		return Race{}, fmt.Errorf("couldnt find chosen race")
+	}
+
+	return race, nil
 }

@@ -70,6 +70,8 @@ func configureServer() {
 	//handlers to get reference data
 	http.HandleFunc("GET /reference/classes/{class}", classReferenceHandler)
 	http.HandleFunc("GET /reference/languages", languageReferenceHandler)
+	http.HandleFunc("GET /reference/skills", skillsReferenceHandler)
+	http.HandleFunc("GET /reference/races/{race}", raceReferenceHandler)
 
 	//handlers to create a new character
 	http.HandleFunc("POST /characters/create", createCharacterHandler)
