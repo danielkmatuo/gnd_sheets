@@ -133,8 +133,7 @@
             },
             "Dwarven Resilience": {
                 "description": "You have advantage on saving throws against poison, and you have resistance against poison damage.",
-                "resist_types": ["poison"],
-                "quantity_resist": 1
+                "resist_types": ["poison"]
             },
             "Dwarven Combat Training": {
                 "description": "You have proficiency with the battleaxe, handaxe, light hammer, and warhammer.",
@@ -164,20 +163,20 @@
                 },
                 "Drow Magic": {
                     "description": "You know the Dancing Lights cantrip. When you reach 3rd level, you can cast the Faerie Fire spell once with this trait and regain the ability to do so when you finish a long rest. When you reach 5th level, you can cast the Darkness spell once and regain the ability to do so when you finish a long rest. Charisma is your spellcasting ability for these spells.",
-                    "bonus_spells": {
-                        "Dancing Lights": 1,
-                        "Faerie Fire": 3,
-                        "Darkness": 5
+                    "Dancing Lights": {
+                        "level": 1,
+                        "uses": -1,
+                        "reset": "cantrip"
                     },
-                    "bonus_spells_uses": {
-                        "Dancing Lights": -1,
-                        "Faerie Fire": 1,
-                        "Darkness": 1
+                    "Faerie Fire": {
+                        "level": 3,
+                        "uses": 1,
+                        "reset": "long"
                     },
-                    "reset_spells": {
-                        "Dancing Lights": "cantrip",
-                        "Faerie Fire": "long",
-                        "Darkness": "long"
+                    "Darkness": {
+                        "level": 5,
+                        "uses": 1,
+                        "reset": "long"
                     },
                     "spellcasting_stat": "cha"
                 },
@@ -191,14 +190,10 @@
             "High Elf": {
                 "Cantrip": {
                     "description": "You know one cantrip of your choice from the Wizard spell list. Intelligence is your spellcasting ability for it.",
-                    "bonus_spells": {
-                        "any cantrip": 1
-                    },
-                    "bonus_spells_uses": {
-                        "any cantrip": -1
-                    },
-                    "reset_spells": {
-                        "any cantrip": "cantrip"  
+                    "any cantrip": {
+                        "level": 1,
+                        "uses": -1,
+                        "reset": "cantrip"
                     },
                     "spellcasting_stat": "int"
                 },
@@ -328,14 +323,10 @@
                     },
                     "Cantrip": {
                         "description": "You know one cantrip of your choice from the Wizard spell list. Intelligence is your spellcasting ability for it.",
-                        "bonus_spells": {
-                            "any cantrip": 1
-                        },
-                        "bonus_spells_uses": {
-                            "any cantrip": -1
-                        },
-                        "reset_spells": {
-                            "any cantrip": "cantrip"  
+                        "any cantrip": {
+                            "level": 1,
+                            "uses": -1,
+                            "reset": "cantrip"
                         },
                         "spellcasting_stat": "int"
                     },
@@ -349,20 +340,20 @@
                     },
                     "Drow Magic": {
                         "description": "You know the Dancing Lights cantrip. When you reach 3rd level, you can cast the Faerie Fire spell once with this trait and regain the ability to do so when you finish a long rest. When you reach 5th level, you can cast the Darkness spell once and regain the ability to do so when you finish a long rest. Charisma is your spellcasting ability for these spells.",
-                        "bonus_spells": {
-                            "Dancing Lights": 1,
-                            "Faerie Fire": 3,
-                            "Darkness": 5
+                        "Dancing Lights": {
+                            "level": 1,
+                            "uses": -1,
+                            "reset": "cantrip"
                         },
-                        "bonus_spells_uses": {
-                            "Dancing Lights": -1,
-                            "Faerie Fire": 1,
-                            "Darkness": 1
+                        "Faerie Fire": {
+                            "level": 3,
+                            "uses": 1,
+                            "reset": "long"
                         },
-                        "reset_spells": {
-                            "Dancing Lights": "cantrip",
-                            "Faerie Fire": "long",
-                            "Darkness": "long"
+                        "Darkness": {
+                            "level": 5,
+                            "uses": 1,
+                            "reset": "long"
                         },
                         "spellcasting_stat": "cha"
                     }
@@ -407,8 +398,7 @@
             "Stout": {
                 "Stout Resilience": {
                     "description": "You have advantage on saving throws against poison, and you have resistance to poison damage.",
-                    "resist_types": ["poison"],
-                    "quantity_resist": 1
+                    "resist_types": ["poison"]
                 }
             }
         },
@@ -460,20 +450,20 @@
             "Bloodline of Asmodeus": {
                 "Infernal Legacy": {
                     "description": "You know the Thaumaturgy cantrip. Once you reach 3rd level, you can cast the Hellish Rebuke spell once as a 2nd-level spell. Once you reach 5th level, you can also cast the Darkness spell once. You must finish a long rest to cast these spells again with this trait. Charisma is your spellcasting ability for these spells.",
-                    "bonus_spells": {
-                        "Thaumaturgy": 1,
-                        "Hellish Rebuke": 3,
-                        "Darkness": 5
+                    "Thaumaturgy": {
+                        "level": 1,
+                        "uses": -1,
+                        "reset": "cantrip"
                     },
-                    "bonus_spells_uses": {
-                        "Thaumaturgy": -1,
-                        "Hellish Rebuke": 1,
-                        "Darkness": 1
+                    "Hellish Rebuke": {
+                        "level": 3,
+                        "uses": 1,
+                        "reset": "long"
                     },
-                    "reset_spells": {
-                        "Thaumaturgy": "cantrip",
-                        "Hellish Rebuke": "long",
-                        "Darkness": "long"
+                    "Darkness": {
+                        "level": 5,
+                        "uses": 1,
+                        "reset": "long"
                     },
                     "spellcasting_stat": "cha"
                 }
@@ -490,8 +480,7 @@
             },
             "Hellish Resistance": {
                 "description": "You have resistance to fire damage.",
-                "resist_types": ["fire"],
-                "quantity_resist": 1
+                "resist_types": ["fire"]
             }
         }
    }
