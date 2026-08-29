@@ -66,7 +66,7 @@ async function getLanguagesInfoFromReference(selectedRace) {
     );
 
     if (!response.ok) {
-        alert("Could not load race information from server.");
+        alert("Could not load languages information from server.");
         const errorMessage = await response.text();
         console.error("Go server error: ", errorMessage)
         return;
@@ -81,7 +81,7 @@ async function getSkillsInfoFromReference(selectedRace) {
     );
 
     if (!response.ok) {
-        alert("Could not load race information from server.");
+        alert("Could not load skills information from server.");
         const errorMessage = await response.text();
         console.error("Go server error: ", errorMessage)
         return;
@@ -102,13 +102,16 @@ function quantitySkillsCheck (quantity, data) {
 
 //TODO: calculate proficiency bonus based on level selected by the user
 function calculateProficiencyBonus() {
-    level = Number(levelSelect.value);
-    baselineBonus = 2;
+    const level = Number(levelSelect.value);
+    const baselineBonus = 2;
+    const progressionStep = 4; //hardcoded for now
 
     if (level < 1 || level > 20) {
         alert("Invalid level. Must be in range 1 to 20");
         return -1;
     }
+
+
 }
 
 //frontend validation of the character ability scores
