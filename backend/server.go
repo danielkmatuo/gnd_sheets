@@ -61,17 +61,28 @@ func viewPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func configureServer() {
+	//handlers to serve static files
 	http.HandleFunc("GET /{$}", indexHandler)
 	http.HandleFunc("GET /js/create", jsCreateHandler)
 	http.HandleFunc("GET /js/edit", jsEditHandler)
 	http.HandleFunc("GET /js/view", jsViewHandler)
 
+	//handlers to get reference data
 	http.HandleFunc("GET /reference/classes/{class}", classReferenceHandler)
-	http.HandleFunc("GET /characters", charactersHandler)
+	http.HandleFunc("GET /reference/languages", languageReferenceHandler)
+
+	//handlers to create a new character
 	http.HandleFunc("POST /characters/create", createCharacterHandler)
+
+	//handlers to send stored characters
 	http.HandleFunc("GET /character/{id}/data", sendCharacterDataHandler)
-	http.HandleFunc("GET /character/{id}/edit", editPageHandler)
+
+	//handlers to view characters
+	http.HandleFunc("GET /characters", charactersHandler)
 	http.HandleFunc("GET /character/{id}/view", viewPageHandler)
+
+	//handlers to edit character
+	http.HandleFunc("GET /character/{id}/edit", editPageHandler)
 	http.HandleFunc("POST /character/{id}/edit/done", editCharacterDoneHandler)
 }
 

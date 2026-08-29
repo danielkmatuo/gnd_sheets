@@ -59,7 +59,7 @@ func validateNewCharacter(newCharacter NewCharacter, root string) (Character, er
 }
 
 func validateByClassReferenceData(c Character) (Character, error) {
-	classInfoMap, err := getReferenceData()	
+	classInfoMap, err := getClassReferenceData()	
 	if err != nil {
 		return Character{}, err
 	}
@@ -106,7 +106,7 @@ func validateByClassReferenceData(c Character) (Character, error) {
 
 func validateExistingCharacter(c Character) (Character, error){
 	var validated Character
-	referenceMap, err := getReferenceData()
+	referenceMap, err := getClassReferenceData()
 	if err != nil {
 		return Character{}, err
 	}
@@ -416,7 +416,7 @@ func calculateStatBonusStruct(stats Attributes) Attributes {
 }
 
 func calculateDynamicallyNewCharacter(c Character) (Character, error) {
-	referenceMap, err := getReferenceData()
+	referenceMap, err := getClassReferenceData()
 	if err != nil {
 		return Character{}, err
 	}

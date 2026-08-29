@@ -43,7 +43,7 @@ type ClassInfo struct {
 func classReferenceHandler(w http.ResponseWriter, r *http.Request) {
 	className := r.PathValue("class")
 
-	classes, err := getReferenceData()
+	classes, err := getClassReferenceData()
 	if err != nil {
 		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
 		return
@@ -59,12 +59,12 @@ func classReferenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = json.NewEncoder(w).Encode(class)
 	if err != nil {
-		http.Error(w, "could not send class data", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
 		return
 	}
 }
 
-func getReferenceData() (map[string]ClassInfo, error) {
+func getClassReferenceData() (map[string]ClassInfo, error) {
 	root := findRootDir() 
 	if root == "" {
 		return map[string]ClassInfo{}, fmt.Errorf("couldnt find root")
