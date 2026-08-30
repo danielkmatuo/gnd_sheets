@@ -173,11 +173,11 @@ function checkBothStates(bonus, stat, newValue, pointBuyState, allocationState) 
 
 //manipulate the skills data received from the backend
 function createSkillsObj(data) {
-    skillsObj = {};
+    let skillsObj = {};
 
-    for (key of Object.keys(data)) {
-        innerObj = {};
-        for (skill of Object.values(data[key])) {
+    for (const key of Object.keys(data)) {
+        let innerObj = {};
+        for (const skill of Object.values(data[key])) {
             innerObj[skill] = 0;
         }
         skillsObj[key] = innerObj;
@@ -189,10 +189,14 @@ function createSkillsObj(data) {
 function createBaselineSkillsObj(data, modifiers) {
     let baselineSkillsObj = createSkillsObj(data);
      
-    for (key of Object.keys(modifiers)) {
-        innerKeys = baselineSkillsObj[key]
-        for (skill of innerKeys) {
-            baselineSkillsObj[key[skill]] = modifiers[key]; 
+    for (const key of Object.keys(modifiers)) {
+        if (baselineSkillsObj[key] === null) {
+            continue;
+        }
+
+        let innerObj = baselineSkillsObj[key];
+        for (const skill of Object.keys(innerObj)) {
+            baselineSkillsObj[key][skill] = modifiers[key]; 
         }
     }
     
@@ -203,7 +207,7 @@ function createBaselineSkillsObj(data, modifiers) {
 function calculateAbilityModifiers(pointBuyState) {
     let modifiers = {};
 
-    for (key of Object.keys(pointBuyState)) {
+    for (const key of Object.keys(pointBuyState)) {
         const stat = pointBuyState[key];
         let bonus = 0; 
         const baseline = 10;
@@ -227,6 +231,14 @@ function calculateAbilityModifiers(pointBuyState) {
     }
 
     return modifiers;
+}
+
+function getModifierString(value) {
+    if (value >= 0) {
+        return "+" + value;
+    }
+
+    return value;
 }
 
 export {

@@ -6,7 +6,6 @@ const classInfo = document.querySelector("#class-info");
 
 const raceSelect = document.querySelector("#race");
 
-const abilityModifiers = creationRules.calculateAbilityModifiers(validPointBuyState);
 const characterStats = document.querySelectorAll("#abilities input");
 const form = document.querySelector("#character-form"); //For now, I don't need this
 const levelSelect = document.querySelector("#level");
@@ -60,12 +59,30 @@ function renderProficiencyBonus() {
 }
 
 function renderAllSkills() {
+    const abilityModifiers = creationRules.calculateAbilityModifiers(validPointBuyState);
     const baselineSkillsObj = creationRules.createBaselineSkillsObj(allSkillsData, abilityModifiers);
+
+    let html = `
+        <fieldset>
+        <label>Character Skills</label>
+    `;
+    for (const key of Object.keys(baselineSkillsObj)) {
+        let bonus = abilityModifiers[key];    
+        for (const skill of Object.keys(baselineSkillsObj[key])) {
+            html += `
+                <p>${skill}: creationRules.getModifierString(bonus)</p>
+            `;
+        }
+    }
+
+    html += `</fieldset>`;
+    document.querySelector("#skills-panel").innerHTML = html;
 }
 
 //changes data from index.html dynamically based on level passed by user
 levelSelect.addEventListener("change", async function() {
     renderProficiencyBonus();
+    renderAllSkills();
 });
 
 //changes data from index.html dynamically based on class passed by user
