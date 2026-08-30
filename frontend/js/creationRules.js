@@ -186,15 +186,10 @@ function createSkillsObj(data) {
     return skillsObj;
 }
 
-async function createBaselineSkillsObj(response, modifiers) {
-    const data = await response.json();
+function createBaselineSkillsObj(data, modifiers) {
     let baselineSkillsObj = createSkillsObj(data);
      
     for (const key of Object.keys(modifiers)) {
-        if (baselineSkillsObj[key] === null) {
-            continue;
-        }
-
         let innerObj = baselineSkillsObj[key];
         for (const skill of Object.keys(innerObj)) {
             baselineSkillsObj[key][skill] = modifiers[key]; 
@@ -254,5 +249,6 @@ export {
     tryPointBuyChange,
     checkBothStates,
     createBaselineSkillsObj,
-    calculateAbilityModifiers
+    calculateAbilityModifiers,
+    getModifierString
 };

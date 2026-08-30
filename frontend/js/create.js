@@ -13,7 +13,7 @@ const levelSelect = document.querySelector("#level");
 const bonusButtons = document.querySelectorAll("#abilities button");
 const resetBonusButton = document.querySelector("#reset-bonus");
 
-const allSkillsResponse = await api.getSkillsInfoFromReference();
+const allSkillsData = await api.getSkillsInfoFromReference();
 
 let allocatedBonus = {
     "str": 0,
@@ -58,9 +58,10 @@ function renderProficiencyBonus() {
     document.querySelector("#proficiency-bonus").textContent = "Proficiency Bonus: +" + proficiencyBonus;
 }
 
-async function renderAllSkills() {
+function renderAllSkills() {
+    const skillsPanel = document.querySelector("#skills-panel");
     const abilityModifiers = creationRules.calculateAbilityModifiers(validPointBuyState);
-    const baselineSkillsObj = await creationRules.createBaselineSkillsObj(allSkillsResponse, abilityModifiers);
+    const baselineSkillsObj = creationRules.createBaselineSkillsObj(allSkillsData, abilityModifiers);
 
     let html = `
         <fieldset>
@@ -70,19 +71,22 @@ async function renderAllSkills() {
         let bonus = abilityModifiers[key];    
         for (const skill of Object.keys(baselineSkillsObj[key])) {
             html += `
-                <p>${skill}: creationRules.getModifierString(bonus)</p>
+                <p>${skill}: ${creationRules.getModifierString(bonus)}</p>
             `;
         }
     }
 
     html += `</fieldset>`;
-    document.querySelector("#skills-panel").innerHTML = html;
+    console.log(skillsPanel);
+    console.log(html);
+    skillsPanel.innerHTML = html;
+    console.log(skillsPanel.innerHTML);
 }
 
 //changes data from index.html dynamically based on level passed by user
 levelSelect.addEventListener("change", async function() {
     renderProficiencyBonus();
-    await renderAllSkills();
+    renderAllSkills();
 });
 
 //changes data from index.html dynamically based on class passed by user

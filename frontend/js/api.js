@@ -26,7 +26,7 @@ async function getRaceInfoFromReference(selectedRace) {
         return;
     }
 
-    return response;
+    return await response.json();
 }
 
 async function getLanguagesInfoFromReference() {
@@ -41,7 +41,7 @@ async function getLanguagesInfoFromReference() {
         return;
     }
 
-    return response;
+    return await response.json();
 }
 
 async function getSkillsInfoFromReference() {
@@ -56,7 +56,7 @@ async function getSkillsInfoFromReference() {
         return;
     }
 
-    return response;
+    return await response.json();
 }
 
 async function sendCharacterData(data) {
