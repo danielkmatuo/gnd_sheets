@@ -13,7 +13,7 @@ const levelSelect = document.querySelector("#level");
 const bonusButtons = document.querySelectorAll("#abilities button");
 const resetBonusButton = document.querySelector("#reset-bonus");
 
-const allSkillsData = await api.getSkillsInfoFromReference();
+const allSkillsResponse = await api.getSkillsInfoFromReference();
 
 let allocatedBonus = {
     "str": 0,
@@ -58,9 +58,9 @@ function renderProficiencyBonus() {
     document.querySelector("#proficiency-bonus").textContent = "Proficiency Bonus: +" + proficiencyBonus;
 }
 
-function renderAllSkills() {
+async function renderAllSkills() {
     const abilityModifiers = creationRules.calculateAbilityModifiers(validPointBuyState);
-    const baselineSkillsObj = creationRules.createBaselineSkillsObj(allSkillsData, abilityModifiers);
+    const baselineSkillsObj = await creationRules.createBaselineSkillsObj(allSkillsResponse, abilityModifiers);
 
     let html = `
         <fieldset>
@@ -82,7 +82,7 @@ function renderAllSkills() {
 //changes data from index.html dynamically based on level passed by user
 levelSelect.addEventListener("change", async function() {
     renderProficiencyBonus();
-    renderAllSkills();
+    await renderAllSkills();
 });
 
 //changes data from index.html dynamically based on class passed by user

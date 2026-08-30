@@ -186,7 +186,8 @@ function createSkillsObj(data) {
     return skillsObj;
 }
 
-function createBaselineSkillsObj(data, modifiers) {
+async function createBaselineSkillsObj(response, modifiers) {
+    const data = await response.json();
     let baselineSkillsObj = createSkillsObj(data);
      
     for (const key of Object.keys(modifiers)) {
