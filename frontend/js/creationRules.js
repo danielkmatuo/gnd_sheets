@@ -171,6 +171,64 @@ function checkBothStates(bonus, stat, newValue, pointBuyState, allocationState) 
     return false;
 }
 
+//manipulate the skills data received from the backend
+function createSkillsObj(data) {
+    skillsObj = {};
+
+    for (key of Object.keys(data)) {
+        innerObj = {};
+        for (skill of Object.values(data[key])) {
+            innerObj[skill] = 0;
+        }
+        skillsObj[key] = innerObj;
+    }
+
+    return skillsObj;
+}
+
+function createBaselineSkillsObj(data, modifiers) {
+    let baselineSkillsObj = createSkillsObj(data);
+     
+    for (key of Object.keys(modifiers)) {
+        innerKeys = baselineSkillsObj[key]
+        for (skill of innerKeys) {
+            baselineSkillsObj[key[skill]] = modifiers[key]; 
+        }
+    }
+    
+    return baselineSkillsObj;
+}
+
+//calculate ability scores modifiers
+function calculateAbilityModifiers(pointBuyState) {
+    let modifiers = {};
+
+    for (key of Object.keys(pointBuyState)) {
+        const stat = pointBuyState[key];
+        let bonus = 0; 
+        const baseline = 10;
+
+        if (stat % 2 == 0) {
+            if (stat >= baseline) {
+                bonus = (stat - baseline) / 2;
+            }
+            else {
+                bonus = ((baseline - stat) * (-1)) / 2; 
+            }
+        }
+        else if (stat < baseline) {
+            bonus = ((baseline - stat + 1) * (-1)) / 2;
+        }
+        else {
+            bonus = (stat - baseline - 1) / 2;
+        }
+
+        modifiers[key] = bonus;
+    }
+
+    return modifiers;
+}
+
 export {
     quantitySkillsCheck,
     calculateProficiencyBonus,
@@ -181,5 +239,7 @@ export {
     validateCreationBonusPoints,
     tryAllocationBonusPoints,
     tryPointBuyChange,
-    checkBothStates
+    checkBothStates,
+    createBaselineSkillsObj,
+    calculateAbilityModifiers
 };

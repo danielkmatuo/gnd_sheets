@@ -6,12 +6,15 @@ const classInfo = document.querySelector("#class-info");
 
 const raceSelect = document.querySelector("#race");
 
+const abilityModifiers = creationRules.calculateAbilityModifiers(validPointBuyState);
 const characterStats = document.querySelectorAll("#abilities input");
 const form = document.querySelector("#character-form"); //For now, I don't need this
 const levelSelect = document.querySelector("#level");
 
 const bonusButtons = document.querySelectorAll("#abilities button");
 const resetBonusButton = document.querySelector("#reset-bonus");
+
+const allSkillsData = await api.getSkillsInfoFromReference();
 
 let allocatedBonus = {
     "str": 0,
@@ -54,6 +57,10 @@ function renderProficiencyBonus() {
     }
 
     document.querySelector("#proficiency-bonus").textContent = "Proficiency Bonus: +" + proficiencyBonus;
+}
+
+function renderAllSkills() {
+    const baselineSkillsObj = creationRules.createBaselineSkillsObj(allSkillsData, abilityModifiers);
 }
 
 //changes data from index.html dynamically based on level passed by user
@@ -122,7 +129,7 @@ classSelect.addEventListener("change", async function () {
             if (!valid) {
                 event.target.checked = false;
 
-                alert(`You can only choose ${data.skill_choices.choose} skills.`);
+                alert(`You can only choose ${classData.skill_choices.choose} skills.`);
             }
         });
     });
@@ -168,7 +175,6 @@ bonusButtons.forEach(function(button) {
 });
 
 resetBonusButton.addEventListener("click", async function() {
-    creationBonusPoints = 0;
     for (const key of Object.keys(allocatedBonus)) {
         allocatedBonus[key] = 0;
         document.querySelector(`#${key}`).value = validPointBuyState[key]; 
@@ -185,7 +191,7 @@ form.addEventListener("submit", async function(event) {
         document.querySelectorAll('input[name="skills"]:checked')
     ).map(input => input.value);
 
-    character = {
+    const character = {
         "name": document.querySelector("#name").value,
         "level": Number(document.querySelector("#level").value), 
         "class": classSelect.value,
@@ -197,7 +203,7 @@ form.addEventListener("submit", async function(event) {
 
     console.log(character);
 
-    api.sendCharacterData(character);
+    await api.sendCharacterData(character);
 
     window.location.href = "/characters";
 });
