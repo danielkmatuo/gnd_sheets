@@ -103,15 +103,26 @@ function quantitySkillsCheck (quantity, data) {
 //TODO: calculate proficiency bonus based on level selected by the user
 function calculateProficiencyBonus() {
     const level = Number(levelSelect.value);
-    const baselineBonus = 2;
-    const progressionStep = 4; //hardcoded for now
+    const progressionStep = 4;
+    let baselineBonus = 2;
+    let progressionAnchor = 5;
 
     if (level < 1 || level > 20) {
         alert("Invalid level. Must be in range 1 to 20");
         return -1;
     }
 
-
+    for (let i = 5; i <= level; i++) {
+        if (i === progressionAnchor) {
+            baselineBonus++;
+        }
+        else if (i - progressionAnchor === progressionStep) {
+            progressionAnchor = i;
+            baselineBonus++;
+        }
+    }
+    
+    return baselineBonus;
 }
 
 //frontend validation of the character ability scores
@@ -262,7 +273,22 @@ function renderAbilities() {
     document.querySelector("#curr-bonus").textContent = `Available Bonus Points: ${bonusPointsCap - usedBonus}`;
 }
 
-//changes data from index.html dynamically
+function renderProficiencyBonus() {
+    const proficiencyBonus = calculateProficiencyBonus();
+
+    if (proficiencyBonus < 2) {
+        return
+    }
+
+    document.querySelector("#proficiency-bonus").textContent = "Proficiency Bonus: +" + proficiencyBonus;
+}
+
+//changes data from index.html dynamically based on level passed by user
+levelSelect.addEventListener("change", async function() {
+    renderProficiencyBonus();
+});
+
+//changes data from index.html dynamically based on class passed by user
 //TODO: add tools list in reference data
 classSelect.addEventListener("change", async function () {
     const selectedClass = classSelect.value;
@@ -287,7 +313,7 @@ classSelect.addEventListener("change", async function () {
             <legend>Choose ${classData.skill_choices.choose} skills:</legend>
     `;
 
-    var numSkills = data.skill_choices.from.length
+    var numSkills = classData.skill_choices.from.length
     for (var i = 0; i < numSkills; i++) {
         html += `
         <div>
@@ -317,7 +343,7 @@ classSelect.addEventListener("change", async function () {
 
             const valid = quantitySkillsCheck(
                 quantity,
-                data
+                classData
             );
 
             if (!valid) {
