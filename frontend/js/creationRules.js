@@ -229,12 +229,43 @@ function calculateAbilityModifiers(pointBuyState) {
     return modifiers;
 }
 
+//helpers
 function getModifierString(value) {
     if (value >= 0) {
         return "+" + value;
     }
 
     return value;
+}
+
+function capitalize(name) {
+    const arr = name.split(" ");
+
+    if (arr.length < 2) {
+        const firstLetter = name.charAt(0);
+        const upperFirstLetter = firstLetter.toUpperCase();
+        return name.replace(name.charAt(0), upperFirstLetter);
+    }
+    else {
+        let newName = "";
+
+        for (let i = 0; i < arr.length; i++) {
+            if (arr[i] != "of") {
+                const firstLetter = arr[i].charAt(0);
+                const upperFirstLetter = firstLetter.toUpperCase();
+                if (i < arr.length - 1) { 
+                    newName += arr[i].replace(arr[i].charAt(0), upperFirstLetter) + " ";
+                }
+                else {
+                    newName += arr[i].replace(arr[i].charAt(0), upperFirstLetter);
+                }
+            }
+            else {
+                newName += arr[i] + " ";
+            }
+        }
+        return newName;
+    }
 }
 
 export {
@@ -250,5 +281,6 @@ export {
     checkBothStates,
     createBaselineSkillsObj,
     calculateAbilityModifiers,
-    getModifierString
+    getModifierString,
+    capitalize
 };

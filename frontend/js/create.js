@@ -13,7 +13,7 @@ const levelSelect = document.querySelector("#level");
 const bonusButtons = document.querySelectorAll("#abilities button");
 const resetBonusButton = document.querySelector("#reset-bonus");
 
-const allSkillsData = await api.getSkillsInfoFromReference();
+let selectedSkills = ["something"];
 
 let allocatedBonus = {
     "str": 0,
@@ -32,6 +32,8 @@ let validPointBuyState = {
     "wis": 8,
     "cha": 8
 };
+
+const allSkillsData = await api.getSkillsInfoFromReference();
 
 //render stuff on the frontend
 function renderAbilities() {
@@ -58,35 +60,48 @@ function renderProficiencyBonus() {
     document.querySelector("#proficiency-bonus").textContent = "Proficiency Bonus: +" + proficiencyBonus;
 }
 
-function renderAllSkills() {
+function renderAllSkills(selectedSkills) {
+    const proficiencyBonus = creationRules.calculateProficiencyBonus(Number(levelSelect.value));
     const skillsPanel = document.querySelector("#skills-panel");
     const abilityModifiers = creationRules.calculateAbilityModifiers(validPointBuyState);
     const baselineSkillsObj = creationRules.createBaselineSkillsObj(allSkillsData, abilityModifiers);
 
+    console.log(selectedSkills);
+
     let html = `
         <fieldset>
-        <label>Character Skills</label>
+        <legend>Character Skills</legend>
     `;
     for (const key of Object.keys(baselineSkillsObj)) {
         let bonus = abilityModifiers[key];    
         for (const skill of Object.keys(baselineSkillsObj[key])) {
-            html += `
-                <p>${skill}: ${creationRules.getModifierString(bonus)}</p>
-            `;
+            let checked = false;
+            for (const selected of selectedSkills) {
+                if (skill === selected) {
+                    checked = true; 
+                    baselineSkillsObj[key][skill] = bonus + proficiencyBonus;
+                    html += `
+                        <p>${skill}: ${creationRules.getModifierString(baselineSkillsObj[key][skill])}</p>
+                    `;
+                }
+            }
+            if (!checked) {
+                baselineSkillsObj[key][skill] = bonus;
+                html += `
+                    <p>${skill}: ${creationRules.getModifierString(baselineSkillsObj[key][skill])}</p>
+                `;
+            }
         }
     }
 
     html += `</fieldset>`;
-    console.log(skillsPanel);
-    console.log(html);
     skillsPanel.innerHTML = html;
-    console.log(skillsPanel.innerHTML);
 }
 
 //changes data from index.html dynamically based on level passed by user
 levelSelect.addEventListener("change", async function() {
     renderProficiencyBonus();
-    renderAllSkills();
+    renderAllSkills(selectedSkills);
 });
 
 //changes data from index.html dynamically based on class passed by user
@@ -136,9 +151,14 @@ classSelect.addEventListener("change", async function () {
 
     skillCheckboxes.forEach(function (checkbox) {
         checkbox.addEventListener("change", function (event) {
-            const selectedSkills = document.querySelectorAll(
+            selectedSkills = [];
+            const inputedSkills = document.querySelectorAll(
                 'input[name="skills"]:checked'
             );
+
+            inputedSkills.forEach(function(skill) {
+                selectedSkills.push(creationRules.capitalize(skill.value));
+            });
 
             const quantity = selectedSkills.length;
 
@@ -152,6 +172,8 @@ classSelect.addEventListener("change", async function () {
 
                 alert(`You can only choose ${classData.skill_choices.choose} skills.`);
             }
+
+            renderAllSkills(selectedSkills);
         });
     });
 });
