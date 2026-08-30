@@ -1,8 +1,9 @@
 package backend
 
 import (
-	"net/http"
 	"fmt"
+	"log"
+	"net/http"
 	"path/filepath"
 )
 
@@ -13,33 +14,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.ServeFile(w, r, filepath.Join(root, "frontend", "index.html"))
-}
-
-func jsCreateHandler(w http.ResponseWriter, r *http.Request) {
-	root := findRootDir() 
-	if root == "" {
-		http.Error(w, "couldnt find root", http.StatusInternalServerError)
-	}
-	
-	http.ServeFile(w, r, filepath.Join(root, "frontend", "js", "create.js"))
-}
-
-func jsEditHandler(w http.ResponseWriter, r *http.Request) {
-	root := findRootDir() 
-	if root == "" {
-		http.Error(w, "couldnt find root", http.StatusInternalServerError)
-	}
-	
-	http.ServeFile(w, r, filepath.Join(root, "frontend", "js", "edit.js"))
-}
-
-func jsViewHandler(w http.ResponseWriter, r *http.Request) {
-	root := findRootDir() 
-	if root == "" {
-		http.Error(w, "couldnt find root", http.StatusInternalServerError)
-	}
-	
-	http.ServeFile(w, r, filepath.Join(root, "frontend", "js", "view.js"))
 }
 
 func editPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -61,11 +35,15 @@ func viewPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func configureServer() {
+	root := findRootDir()
+	if root == "" {
+		log.Fatal("couldnt find root. Server shutting down")	
+	}
+	jsDir := http.FileServer(http.Dir(filepath.Join(root, "frontend", "js")))
+
 	//handlers to serve static files
 	http.HandleFunc("GET /{$}", indexHandler)
-	http.HandleFunc("GET /js/create", jsCreateHandler)
-	http.HandleFunc("GET /js/edit", jsEditHandler)
-	http.HandleFunc("GET /js/view", jsViewHandler)
+	http.Handle("/js/", http.StripPrefix("/js/", jsDir))	
 
 	//handlers to get reference data
 	http.HandleFunc("GET /reference/classes/{class}", classReferenceHandler)
