@@ -188,6 +188,7 @@ characterStats.forEach(function(statInput) {
 
         creationRules.tryPointBuyChange(event.target.id, Number(event.target.value), validPointBuyState);
         renderAbilities();
+        renderAllSkills(Number(levelSelect.value));
     });
 });
 
@@ -214,6 +215,7 @@ bonusButtons.forEach(function(button) {
         }
 
         renderAbilities();
+        renderAllSkills(Number(levelSelect.value));
     });
 });
 
@@ -230,16 +232,12 @@ resetBonusButton.addEventListener("click", async function() {
 form.addEventListener("submit", async function(event) {
     event.preventDefault();
 
-    const skills = Array.from(
-        document.querySelectorAll('input[name="skills"]:checked')
-    ).map(input => input.value);
-
     const character = {
         "name": document.querySelector("#name").value,
-        "level": Number(document.querySelector("#level").value), 
+        "level": Number(levelSelect.value), 
         "class": classSelect.value,
         "race": document.querySelector("#race").value,
-        "skills": skills,
+        "skills": selectedSkills,
         "point_buy": validPointBuyState,
         "bonus_points": allocatedBonus
     }
