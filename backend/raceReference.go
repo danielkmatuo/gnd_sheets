@@ -95,6 +95,22 @@ type BreathWeaponTrait struct {
 func raceReferenceHandler(w http.ResponseWriter, r *http.Request) {
 	userRace := r.PathValue("race")
 
+	if userRace == "dragonborn" {
+		referenceDragonborn, err := getDragonbornReferenceData(userRace)
+		if err != nil {
+			http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
+			return
+		}
+		
+		w.Header().Set("Content-type", "application/json")
+
+		err = json.NewEncoder(w).Encode(referenceDragonborn)
+		if err != nil {
+			http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
+			return
+		}
+	}
+
 	referenceRace, err := getRaceReferenceData(userRace)
 	if err != nil {
 		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
@@ -135,4 +151,31 @@ func getRaceReferenceData(userRace string) (Race, error) {
 	}
 
 	return race, nil
+}
+
+func getDragonbornReferenceData(userRace string) (Dragonborn, error) {
+	root := findRootDir()
+	if root == "" {
+		return Dragonborn{}, fmt.Errorf("couldnt find root")
+	}
+
+	referenceDataPath := filepath.Join(root, "data", "reference", "races.json")
+
+	referenceBytes, err := os.ReadFile(referenceDataPath)
+	if err != nil {
+		return Dragonborn{}, err
+	}
+
+	var dragonbornMap map[string]Dragonborn
+	err = json.Unmarshal(referenceBytes, &dragonbornMap)
+	if err != nil {
+		return Dragonborn{}, err
+	}
+
+	dragonborn, ok := dragonbornMap[userRace]
+	if !ok {
+		return Dragonborn{}, fmt.Errorf("couldnt find chosen race")
+	}
+
+	return dragonborn, nil
 }

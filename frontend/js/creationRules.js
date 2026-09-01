@@ -268,6 +268,23 @@ function capitalize(name) {
     }
 }
 
+function mergeBonusWithAbilityScores(validScores, validBonus) {
+    let merged = {
+        "str": 0,
+        "dex": 0,
+        "con": 0,
+        "int": 0,
+        "wis": 0,
+        "cha": 0
+    };
+
+    for (const key of Object.keys(merged)) {
+        merged[key] = validScores[key] + validBonus[key];
+    }
+    
+    return merged;
+}
+
 export {
     quantitySkillsCheck,
     calculateProficiencyBonus,
@@ -282,5 +299,6 @@ export {
     createBaselineSkillsObj,
     calculateAbilityModifiers,
     getModifierString,
-    capitalize
+    capitalize,
+    mergeBonusWithAbilityScores
 };

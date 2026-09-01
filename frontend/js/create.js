@@ -63,7 +63,8 @@ function renderProficiencyBonus() {
 function renderAllSkills(selectedSkills) {
     const proficiencyBonus = creationRules.calculateProficiencyBonus(Number(levelSelect.value));
     const skillsPanel = document.querySelector("#skills-panel");
-    const abilityModifiers = creationRules.calculateAbilityModifiers(validPointBuyState);
+    const mergedStats = creationRules.mergeBonusWithAbilityScores(validPointBuyState, allocatedBonus);
+    const abilityModifiers = creationRules.calculateAbilityModifiers(mergedStats);
     const baselineSkillsObj = creationRules.createBaselineSkillsObj(allSkillsData, abilityModifiers);
 
     console.log(selectedSkills);
@@ -81,14 +82,14 @@ function renderAllSkills(selectedSkills) {
                     checked = true; 
                     baselineSkillsObj[key][skill] = bonus + proficiencyBonus;
                     html += `
-                        <p>${skill}: ${creationRules.getModifierString(baselineSkillsObj[key][skill])}</p>
+                        <p>${creationRules.capitalize(skill)}: ${creationRules.getModifierString(baselineSkillsObj[key][skill])}</p>
                     `;
                 }
             }
             if (!checked) {
                 baselineSkillsObj[key][skill] = bonus;
                 html += `
-                    <p>${skill}: ${creationRules.getModifierString(baselineSkillsObj[key][skill])}</p>
+                    <p>${creationRules.capitalize(skill)}: ${creationRules.getModifierString(baselineSkillsObj[key][skill])}</p>
                 `;
             }
         }
@@ -114,9 +115,7 @@ classSelect.addEventListener("change", async function () {
         return;
     }
 
-    const response = await api.getClassInfoFromReference(selectedClass);
-
-    const classData = await response.json();
+    const classData = await api.getClassInfoFromReference();
 
     var html = `
         <h2>${classData.name}</h2>
@@ -134,7 +133,7 @@ classSelect.addEventListener("change", async function () {
         html += `
         <div>
             <input type="checkbox" id="skill${i}" name="skills" value="${classData.skill_choices.from[i]}">
-            <label for="skill${i}">${classData.skill_choices.from[i]}</label>
+            <label for="skill${i}">${creationRules.capitalize(classData.skill_choices.from[i])}</label>
         </div>
         `;
     }
@@ -157,7 +156,7 @@ classSelect.addEventListener("change", async function () {
             );
 
             inputedSkills.forEach(function(skill) {
-                selectedSkills.push(creationRules.capitalize(skill.value));
+                selectedSkills.push(skill.value);
             });
 
             const quantity = selectedSkills.length;
@@ -188,7 +187,7 @@ characterStats.forEach(function(statInput) {
 
         creationRules.tryPointBuyChange(event.target.id, Number(event.target.value), validPointBuyState);
         renderAbilities();
-        renderAllSkills(Number(levelSelect.value));
+        renderAllSkills(selectedSkills);
     });
 });
 
@@ -215,7 +214,7 @@ bonusButtons.forEach(function(button) {
         }
 
         renderAbilities();
-        renderAllSkills(Number(levelSelect.value));
+        renderAllSkills(selectedSkills);
     });
 });
 
@@ -226,6 +225,7 @@ resetBonusButton.addEventListener("click", async function() {
     }
 
     document.querySelector("#curr-bonus").textContent = `Available Bonus Points: ${creationRules.calculateBonusPointsCap()}`;
+    renderAllSkills(selectedSkills);
 });
 
 //send form information to the go server and do the first validation of data
@@ -245,6 +245,4 @@ form.addEventListener("submit", async function(event) {
     console.log(character);
 
     await api.sendCharacterData(character);
-
-    window.location.href = "/characters";
 });

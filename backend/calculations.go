@@ -82,7 +82,7 @@ func calculateBonusProficiency(level int) (int, error) {
 
 	const progressionStep = 4
 	baselineBonus := 2
-	progressionAnchor := 2
+	progressionAnchor := 5
 
 	for i := 5; i <= level; i++ {
 		if i == progressionAnchor {

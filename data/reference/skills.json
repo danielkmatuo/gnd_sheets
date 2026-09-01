@@ -1,29 +1,29 @@
 {
-    "str": ["Athletics"],
+    "str": ["athletics"],
     "dex": [
-        "Acrobatics",
-        "Sleight of Hand",
-        "Stealth"
+        "acrobatics",
+        "sleight of hand",
+        "stealth"
     ],
     "con": [],
     "int": [
-        "Arcana",
-        "Investigation",
-        "History",
-        "Religion",
-        "Nature"
+        "arcana",
+        "investigation",
+        "history",
+        "religion",
+        "nature"
     ],
     "wis": [
-        "Animal Handling",
-        "Insight",
-        "Medicine",
-        "Perception",
-        "Survival"
+        "animal Handling",
+        "insight",
+        "medicine",
+        "perception",
+        "survival"
     ],
     "cha": [
-        "Deception",
-        "Intimidation",
-        "Performance",
-        "Persuasion"
+        "deception",
+        "intimidation",
+        "performance",
+        "persuasion"
     ]
 }

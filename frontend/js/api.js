@@ -11,7 +11,7 @@ async function getClassInfoFromReference(selectedClass) {
         return;
     }
 
-    return response;
+    return await response.json();
 }
 
 async function getRaceInfoFromReference(selectedRace) {
@@ -75,6 +75,8 @@ async function sendCharacterData(data) {
         console.error("Go server error:", errorMessage);
         return;
     }
+
+    window.location.href = "/characters";
 }
 
 export {
