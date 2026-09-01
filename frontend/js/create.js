@@ -115,14 +115,41 @@ raceSelect.addEventListener("change", async function () {
         return
     }
 
-    const raceData = api.getRaceInfoFromReference(selectedRace);
-    const langData = api.getLanguagesInfoFromReference();
+    const raceData = await api.getRaceInfoFromReference(selectedRace);
+    const langData = await api.getLanguagesInfoFromReference();
 
     let html = `
         <h2>${raceData.name}</h2>
+        <p>${raceData.size}</p>
+        <p>${raceData.speed} ft.</p>
+        <p>${raceData.known_languages.join(", ")}</p>
     `;
 
-    raceInfo.innerHTML = html;
+    if (selectedRace === "dragonborn") {
+        html += `
+        <fieldset>
+            <legend>Choose your character ancestry</legend>
+        `;
+        for (const color of Object.keys(raceData.ancestry)) {
+            html += `
+                <input type="radio" id="${color}" name="colors" value="${color}" checked> 
+                <label for="${color}">${color}</label>
+            `;
+        }
+        html += "</fieldset>"
+        raceInfo.innerHTML = html;
+
+    }
+    else {
+        raceInfo.innerHTML = html;
+    }
+
+    const colorInputs = document.querySelectorAll("input[name=colors]");
+    colorInputs.forEach(function(chosenColor) {
+        chosenColor.addEventListener("change", async function(event) {
+            console.log(event.target.value);
+        });
+    });
 });
 
 //change page dynamically based on class input
@@ -157,9 +184,7 @@ classSelect.addEventListener("change", async function () {
         `;
     }
     
-    html += `
-    </fieldset>
-    `;
+    html += `</fieldset>`;
 
     classInfo.innerHTML = html;
 
