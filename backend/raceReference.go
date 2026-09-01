@@ -109,6 +109,8 @@ func raceReferenceHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
 			return
 		}
+
+		return
 	}
 
 	referenceRace, err := getRaceReferenceData(userRace)

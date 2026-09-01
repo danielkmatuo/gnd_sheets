@@ -26,6 +26,7 @@ async function getRaceInfoFromReference(selectedRace) {
         return;
     }
 
+    console.log(response);
     return await response.json();
 }
 
@@ -41,6 +42,7 @@ async function getLanguagesInfoFromReference() {
         return;
     }
 
+    console.log(response);
     return await response.json();
 }
 

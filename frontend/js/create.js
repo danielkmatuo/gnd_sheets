@@ -5,6 +5,7 @@ const classSelect = document.querySelector("#class");
 const classInfo = document.querySelector("#class-info");
 
 const raceSelect = document.querySelector("#race");
+const raceInfo = document.querySelector("#race-info");
 
 const characterStats = document.querySelectorAll("#abilities input");
 const form = document.querySelector("#character-form"); //For now, I don't need this
@@ -105,8 +106,26 @@ levelSelect.addEventListener("change", async function() {
     renderAllSkills(selectedSkills);
 });
 
-//changes data from index.html dynamically based on class passed by user
-//TODO: add tools list in reference data
+//change page dynamically based on race input
+raceSelect.addEventListener("change", async function () {
+    const selectedRace = raceSelect.value;
+
+    if (selectedRace === "") {
+        raceInfo.innerHTML = "";
+        return
+    }
+
+    const raceData = api.getRaceInfoFromReference(selectedRace);
+    const langData = api.getLanguagesInfoFromReference();
+
+    let html = `
+        <h2>${raceData.name}</h2>
+    `;
+
+    raceInfo.innerHTML = html;
+});
+
+//change page dynamically based on class input
 classSelect.addEventListener("change", async function () {
     const selectedClass = classSelect.value;
 
