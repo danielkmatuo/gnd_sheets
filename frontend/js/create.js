@@ -115,7 +115,7 @@ classSelect.addEventListener("change", async function () {
         return;
     }
 
-    const classData = await api.getClassInfoFromReference();
+    const classData = await api.getClassInfoFromReference(selectedClass);
 
     var html = `
         <h2>${classData.name}</h2>
@@ -168,6 +168,7 @@ classSelect.addEventListener("change", async function () {
 
             if (!valid) {
                 event.target.checked = false;
+                selectedSkills.pop();
 
                 alert(`You can only choose ${classData.skill_choices.choose} skills.`);
             }

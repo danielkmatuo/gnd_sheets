@@ -145,3 +145,23 @@ func calculateDynamicallyNewCharacter(c Character) (Character, error) {
 
 	return c, nil
 }
+
+func calculateStatBonusStruct(stats Attributes) Attributes {
+	bonusStr := calculateStatBonus(stats.Str)
+	bonusDex := calculateStatBonus(stats.Dex)
+	bonusCon := calculateStatBonus(stats.Con)
+	bonusInt := calculateStatBonus(stats.Int)
+	bonusWis := calculateStatBonus(stats.Wis)
+	bonusCha := calculateStatBonus(stats.Cha)
+
+	newBonus := Attributes{
+		Str: bonusStr,
+		Dex: bonusDex,
+		Con: bonusCon,
+		Int: bonusInt,
+		Wis: bonusWis,
+		Cha: bonusCha,
+	}
+
+	return newBonus
+}
