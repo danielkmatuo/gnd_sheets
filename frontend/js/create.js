@@ -6,6 +6,7 @@ const classInfo = document.querySelector("#class-info");
 
 const raceSelect = document.querySelector("#race");
 const raceInfo = document.querySelector("#race-info");
+let userDragonbornColor = "";
 
 const characterStats = document.querySelectorAll("#abilities input");
 const form = document.querySelector("#character-form"); //For now, I don't need this
@@ -128,7 +129,8 @@ raceSelect.addEventListener("change", async function () {
     if (selectedRace === "dragonborn") {
         html += `
         <fieldset>
-            <legend>Choose your character ancestry</legend>
+            <legend>Draconic Ancestry</legend>
+            <p>${raceData.traits["Draconic Ancestry"].description}</p>
         `;
         for (const color of Object.keys(raceData.ancestry)) {
             html += `
@@ -136,20 +138,32 @@ raceSelect.addEventListener("change", async function () {
                 <label for="${color}">${color}</label>
             `;
         }
-        html += "</fieldset>"
         raceInfo.innerHTML = html;
 
+        const colorInputs = document.querySelectorAll("input[name=colors]");
+        colorInputs.forEach(function(chosenColor) {
+            chosenColor.addEventListener("change", async function(event) {
+                userDragonbornColor = event.target.value;
+                console.log(userDragonbornColor);
+
+                const userAncestryObj = raceData.ancestry[userDragonbornColor];
+                console.log(userAncestryObj);
+
+                html += `
+                    <p>Resistance type: ${creationRules.capitalize(userAncestryObj.type)}</p>
+                    <p>Breath damage type: ${creationRules.capitalize(userAncestryObj.type)}</p>
+                    <p>Breath shape: ${userAncestryObj.breath_shape}</p>
+                    <p>Breath saving throw type: ${userAncestryObj.breath_saving_throw}</p>
+                `; 
+            });
+        });
+        
+        html += "</fieldset>"
+        raceInfo.innerHTML += html;
     }
     else {
         raceInfo.innerHTML = html;
     }
-
-    const colorInputs = document.querySelectorAll("input[name=colors]");
-    colorInputs.forEach(function(chosenColor) {
-        chosenColor.addEventListener("change", async function(event) {
-            console.log(event.target.value);
-        });
-    });
 });
 
 //change page dynamically based on class input
